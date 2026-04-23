@@ -9,7 +9,7 @@ RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 COPY . .
 RUN go build -o /bin/server ./cmd/server
 
-FROM mirror.gcr.io/library/alpine
+FROM mirror.gcr.io/library/alpine:3.23
 RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 
