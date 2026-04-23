@@ -5,6 +5,6 @@ sql:
     schema: "migrations/"
     gen:
       go:
-        package: "tutorial"
-        out: "tutorial"
+        package: "sqlcdb"
+        out: "internal/infrastructure/postgres/sqlc"
         sql_package: "pgx/v5"
