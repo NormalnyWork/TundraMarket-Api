@@ -18,7 +18,6 @@ func main() {
 	}
 	defer pool.Close()
 
-	// stdlib оборачивает pgx pool в стандартный *sql.DB — goose его требует
 	db := stdlib.OpenDBFromPool(pool)
 
 	if err := goose.Up(db, "./migrations"); err != nil {
