@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package order.v1;
+
+option go_package = "tundraMarket/gen/order/v1;orderv1";
+
+import "common/v1/entities.proto";
+import "common/v1/enums.proto";
+
+message UserCatalogOut {
+  repeated common.v1.Product result = 1;
+}
+
+message OrderCreateIn {
+  int32                           trading_station_id = 2;
+  repeated common.v1.Location     location = 3;
+  repeated common.v1.ProductCount products = 4;
+  optional string                 comment = 5;
+}
+
+message OrderCreateOut {
+  int32 order_id = 1;
+}
+
+message OrderCheckStatusIn {
+  int64  time = 2; // unix seconds
+}
+
+message OrderCheckStatusOut {
+  int32                            order_id = 1;
+  repeated common.v1.StatusHistory status = 2;
+}
+
+message OrderChangeStatusIn {
+  int32            order_id = 2;
+  common.v1.Status new_status = 3;
+  optional string  comment = 4;
+}
+
+message OrderChangeStatusOut {
+  int64 time = 1; // unix seconds
+}
+
+message GetOrderListIn {
+  optional int32          anchor = 2;
+  int32                   page_size = 3;
+  common.v1.OrderCategory order_category = 4;
+}
+
+message GetOrderListOut {
+  repeated common.v1.Order orders = 1;
+}
+
+message GetOrderUpdatesRequest {
+  int64  time = 2;  // unix seconds
+}
+
+message GetOrderUpdatesResponse {
+  repeated common.v1.Order orders = 1;
+}

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "tundraMarket/gen/auth/v1;authv1";
+
+message UserAuthIn {
+  string          phone = 1;
+  optional int32  trading_station_id = 2;
+}
+
+message UserAuthOut {
+  string token = 1;
+}

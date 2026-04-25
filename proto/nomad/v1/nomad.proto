@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package nomad.v1;
+
+option go_package = "tundraMarket/gen/nomad/v1;nomadv1";
+
+import "common/v1/entities.proto";
+
+message UserCurrentOrderOut {
+  optional common.v1.Order order = 1;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package trading_station.v1;
+
+option go_package = "tundraMarket/gen/trading_station/v1;trading_stationv1";
+
+import "common/v1/entities.proto";
+
+message TradingStationListOut {
+  repeated common.v1.TradingStation result = 1;
+}
