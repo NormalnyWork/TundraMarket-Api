@@ -28,14 +28,14 @@ CREATE TYPE status AS ENUM(
 );
 
 CREATE TABLE orders (
-    id                  SERIAL      PRIMARY KEY,
-    nomad_id            INT         REFERENCES nomad(id) ON DELETE CASCADE,
-    trading_station_id  INT         REFERENCES trading_station(id) ON DELETE CASCADE,
-    status              status      NOT NULL DEFAULT 'CREATED',
-    longitude           DECIMAL(9, 6),
-    latitude            DECIMAL(9, 6),
+    id                  SERIAL        PRIMARY KEY,
+    nomad_id            INT           REFERENCES nomad(id) ON DELETE CASCADE,
+    trading_station_id  INT           REFERENCES trading_station(id) ON DELETE CASCADE,
+    status              status        NOT NULL DEFAULT 'CREATED',
+    longitude           DECIMAL(9, 6) NOT NULL,
+    latitude            DECIMAL(9, 6) NOT NULL,
     comment             VARCHAR(255),
-    created_at          TIMESTAMP   NOT NULL DEFAULT NOW()
+    created_at          TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_orders_nomad_id ON orders(nomad_id);
@@ -44,7 +44,7 @@ CREATE INDEX idx_orders_status ON orders(status);
 
 CREATE TABLE product (
     id          SERIAL      PRIMARY KEY,
-    name        VARCHAR,
+    name        VARCHAR     NOT NULL,
     price       INT,
     weight      FLOAT,
     volume      FLOAT,
@@ -53,8 +53,8 @@ CREATE TABLE product (
 
 CREATE TABLE orders_to_product (
     id          SERIAL      PRIMARY KEY,
-    orders_id   INT         REFERENCES orders(id) ON DELETE CASCADE,
-    product_id  INT         REFERENCES product(id) ON DELETE CASCADE,
+    orders_id   INT         NOT NULL REFERENCES orders(id) ON DELETE CASCADE ,
+    product_id  INT         NOT NULL REFERENCES product(id) ON DELETE CASCADE,
     UNIQUE (orders_id, product_id),
     quantity    INT         NOT NULL DEFAULT 1,
     created_at  TIMESTAMP   NOT NULL DEFAULT NOW()
@@ -65,7 +65,7 @@ CREATE INDEX idx_otp_product_id ON orders_to_product(product_id);
 
 CREATE TABLE status_history (
     id          SERIAL      PRIMARY KEY,
-    orders_id   INT         REFERENCES orders(id) ON DELETE CASCADE,
+    orders_id   INT         NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     status      status,
     created_at  TIMESTAMP   NOT NULL DEFAULT NOW()
 );

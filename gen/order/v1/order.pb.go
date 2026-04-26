@@ -68,7 +68,8 @@ func (x *UserCatalogOut) GetResult() []*v1.Product {
 
 type OrderCreateIn struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	TradingStationId int32                  `protobuf:"varint,2,opt,name=trading_station_id,json=tradingStationId,proto3" json:"trading_station_id,omitempty"`
+	NomadId          *int32                 `protobuf:"varint,1,opt,name=nomad_id,json=nomadId,proto3,oneof" json:"nomad_id,omitempty"`
+	TradingStationId *int32                 `protobuf:"varint,2,opt,name=trading_station_id,json=tradingStationId,proto3,oneof" json:"trading_station_id,omitempty"`
 	Location         []*v1.Location         `protobuf:"bytes,3,rep,name=location,proto3" json:"location,omitempty"`
 	Products         []*v1.ProductCount     `protobuf:"bytes,4,rep,name=products,proto3" json:"products,omitempty"`
 	Comment          *string                `protobuf:"bytes,5,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
@@ -106,9 +107,16 @@ func (*OrderCreateIn) Descriptor() ([]byte, []int) {
 	return file_order_v1_order_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *OrderCreateIn) GetNomadId() int32 {
+	if x != nil && x.NomadId != nil {
+		return *x.NomadId
+	}
+	return 0
+}
+
 func (x *OrderCreateIn) GetTradingStationId() int32 {
-	if x != nil {
-		return x.TradingStationId
+	if x != nil && x.TradingStationId != nil {
+		return *x.TradingStationId
 	}
 	return 0
 }
@@ -180,7 +188,7 @@ func (x *OrderCreateOut) GetOrderId() int32 {
 
 type OrderCheckStatusIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Time          int64                  `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"` // unix seconds
+	Time          int64                  `protobuf:"varint,1,opt,name=time,proto3" json:"time,omitempty"` // unix seconds
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -276,9 +284,9 @@ func (x *OrderCheckStatusOut) GetStatus() []*v1.StatusHistory {
 
 type OrderChangeStatusIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
-	NewStatus     v1.Status              `protobuf:"varint,3,opt,name=new_status,json=newStatus,proto3,enum=common.v1.Status" json:"new_status,omitempty"`
-	Comment       *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
+	OrderId       int32                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	NewStatus     v1.Status              `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3,enum=common.v1.Status" json:"new_status,omitempty"`
+	Comment       *string                `protobuf:"bytes,3,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -380,9 +388,9 @@ func (x *OrderChangeStatusOut) GetTime() int64 {
 
 type GetOrderListIn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Anchor        *int32                 `protobuf:"varint,2,opt,name=anchor,proto3,oneof" json:"anchor,omitempty"`
-	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	OrderCategory v1.OrderCategory       `protobuf:"varint,4,opt,name=order_category,json=orderCategory,proto3,enum=common.v1.OrderCategory" json:"order_category,omitempty"`
+	Anchor        *int32                 `protobuf:"varint,1,opt,name=anchor,proto3,oneof" json:"anchor,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	OrderCategory v1.OrderCategory       `protobuf:"varint,3,opt,name=order_category,json=orderCategory,proto3,enum=common.v1.OrderCategory" json:"order_category,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -484,7 +492,7 @@ func (x *GetOrderListOut) GetOrders() []*v1.Order {
 
 type GetOrderUpdatesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Time          int64                  `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"` // unix seconds
+	Time          int64                  `protobuf:"varint,1,opt,name=time,proto3" json:"time,omitempty"` // unix seconds
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -576,39 +584,42 @@ const file_order_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"\x14order/v1/order.proto\x12\border.v1\x1a\x18common/v1/entities.proto\x1a\x15common/v1/enums.proto\"<\n" +
 	"\x0eUserCatalogOut\x12*\n" +
-	"\x06result\x18\x01 \x03(\v2\x12.common.v1.ProductR\x06result\"\xce\x01\n" +
-	"\rOrderCreateIn\x12,\n" +
-	"\x12trading_station_id\x18\x02 \x01(\x05R\x10tradingStationId\x12/\n" +
+	"\x06result\x18\x01 \x03(\v2\x12.common.v1.ProductR\x06result\"\x97\x02\n" +
+	"\rOrderCreateIn\x12\x1e\n" +
+	"\bnomad_id\x18\x01 \x01(\x05H\x00R\anomadId\x88\x01\x01\x121\n" +
+	"\x12trading_station_id\x18\x02 \x01(\x05H\x01R\x10tradingStationId\x88\x01\x01\x12/\n" +
 	"\blocation\x18\x03 \x03(\v2\x13.common.v1.LocationR\blocation\x123\n" +
 	"\bproducts\x18\x04 \x03(\v2\x17.common.v1.ProductCountR\bproducts\x12\x1d\n" +
-	"\acomment\x18\x05 \x01(\tH\x00R\acomment\x88\x01\x01B\n" +
+	"\acomment\x18\x05 \x01(\tH\x02R\acomment\x88\x01\x01B\v\n" +
+	"\t_nomad_idB\x15\n" +
+	"\x13_trading_station_idB\n" +
 	"\n" +
 	"\b_comment\"+\n" +
 	"\x0eOrderCreateOut\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x05R\aorderId\"(\n" +
 	"\x12OrderCheckStatusIn\x12\x12\n" +
-	"\x04time\x18\x02 \x01(\x03R\x04time\"b\n" +
+	"\x04time\x18\x01 \x01(\x03R\x04time\"b\n" +
 	"\x13OrderCheckStatusOut\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x05R\aorderId\x120\n" +
 	"\x06status\x18\x02 \x03(\v2\x18.common.v1.StatusHistoryR\x06status\"\x8d\x01\n" +
 	"\x13OrderChangeStatusIn\x12\x19\n" +
-	"\border_id\x18\x02 \x01(\x05R\aorderId\x120\n" +
+	"\border_id\x18\x01 \x01(\x05R\aorderId\x120\n" +
 	"\n" +
-	"new_status\x18\x03 \x01(\x0e2\x11.common.v1.StatusR\tnewStatus\x12\x1d\n" +
-	"\acomment\x18\x04 \x01(\tH\x00R\acomment\x88\x01\x01B\n" +
+	"new_status\x18\x02 \x01(\x0e2\x11.common.v1.StatusR\tnewStatus\x12\x1d\n" +
+	"\acomment\x18\x03 \x01(\tH\x00R\acomment\x88\x01\x01B\n" +
 	"\n" +
 	"\b_comment\"*\n" +
 	"\x14OrderChangeStatusOut\x12\x12\n" +
 	"\x04time\x18\x01 \x01(\x03R\x04time\"\x96\x01\n" +
 	"\x0eGetOrderListIn\x12\x1b\n" +
-	"\x06anchor\x18\x02 \x01(\x05H\x00R\x06anchor\x88\x01\x01\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12?\n" +
-	"\x0eorder_category\x18\x04 \x01(\x0e2\x18.common.v1.OrderCategoryR\rorderCategoryB\t\n" +
+	"\x06anchor\x18\x01 \x01(\x05H\x00R\x06anchor\x88\x01\x01\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12?\n" +
+	"\x0eorder_category\x18\x03 \x01(\x0e2\x18.common.v1.OrderCategoryR\rorderCategoryB\t\n" +
 	"\a_anchor\";\n" +
 	"\x0fGetOrderListOut\x12(\n" +
 	"\x06orders\x18\x01 \x03(\v2\x10.common.v1.OrderR\x06orders\",\n" +
 	"\x16GetOrderUpdatesRequest\x12\x12\n" +
-	"\x04time\x18\x02 \x01(\x03R\x04time\"C\n" +
+	"\x04time\x18\x01 \x01(\x03R\x04time\"C\n" +
 	"\x17GetOrderUpdatesResponse\x12(\n" +
 	"\x06orders\x18\x01 \x03(\v2\x10.common.v1.OrderR\x06ordersB#Z!tundraMarket/gen/order/v1;orderv1b\x06proto3"
 

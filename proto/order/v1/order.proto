@@ -12,7 +12,8 @@ message UserCatalogOut {
 }
 
 message OrderCreateIn {
-  int32                           trading_station_id = 2;
+  optional int32                  nomad_id = 1;
+  optional int32                  trading_station_id = 2;
   repeated common.v1.Location     location = 3;
   repeated common.v1.ProductCount products = 4;
   optional string                 comment = 5;
@@ -23,7 +24,7 @@ message OrderCreateOut {
 }
 
 message OrderCheckStatusIn {
-  int64  time = 2; // unix seconds
+  int64  time = 1; // unix seconds
 }
 
 message OrderCheckStatusOut {
@@ -32,9 +33,9 @@ message OrderCheckStatusOut {
 }
 
 message OrderChangeStatusIn {
-  int32            order_id = 2;
-  common.v1.Status new_status = 3;
-  optional string  comment = 4;
+  int32            order_id = 1;
+  common.v1.Status new_status = 2;
+  optional string  comment = 3;
 }
 
 message OrderChangeStatusOut {
@@ -42,9 +43,9 @@ message OrderChangeStatusOut {
 }
 
 message GetOrderListIn {
-  optional int32          anchor = 2;
-  int32                   page_size = 3;
-  common.v1.OrderCategory order_category = 4;
+  optional int32          anchor = 1;
+  int32                   page_size = 2;
+  common.v1.OrderCategory order_category = 3;
 }
 
 message GetOrderListOut {
@@ -52,7 +53,7 @@ message GetOrderListOut {
 }
 
 message GetOrderUpdatesRequest {
-  int64  time = 2;  // unix seconds
+  int64  time = 1;  // unix seconds
 }
 
 message GetOrderUpdatesResponse {
