@@ -8,14 +8,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5/pgxpool"
-
-	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
 )
 
 type Dependencies struct {
-	Pool    *pgxpool.Pool
-	Queries *sqlcdb.Queries
+	ReadinessCheck func(context.Context) error
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -26,7 +22,7 @@ func NewRouter(deps Dependencies) http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/healthz", handleHealth)
-	r.Get("/readyz", handleReadiness(deps.Pool))
+	r.Get("/readyz", handleReadiness(deps.ReadinessCheck))
 
 	return r
 }
@@ -35,18 +31,18 @@ func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
-func handleReadiness(pool *pgxpool.Pool) http.HandlerFunc {
+func handleReadiness(check func(context.Context) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if pool == nil {
-			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "database_not_configured"})
+		if check == nil {
+			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "readiness_check_not_configured"})
 			return
 		}
 
 		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
 
-		if err := pool.Ping(ctx); err != nil {
-			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "database_unavailable"})
+		if err := check(ctx); err != nil {
+			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "not_ready"})
 			return
 		}
 

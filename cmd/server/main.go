@@ -12,7 +12,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"tundraMarket/internal/config"
-	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
 	httptransport "tundraMarket/internal/transport/http"
 )
 
@@ -44,10 +43,8 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	queries := sqlcdb.New(pool)
 	handler := httptransport.NewRouter(httptransport.Dependencies{
-		Pool:    pool,
-		Queries: queries,
+		ReadinessCheck: pool.Ping,
 	})
 
 	server := &http.Server{
