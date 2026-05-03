@@ -2,7 +2,6 @@ package httptransport
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -11,7 +10,8 @@ import (
 )
 
 type Dependencies struct {
-	ReadinessCheck func(context.Context) error
+	ReadinessCheck        func(context.Context) error
+	TradingStationHandler *TradingStationHandler
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -23,6 +23,10 @@ func NewRouter(deps Dependencies) http.Handler {
 
 	r.Get("/healthz", handleHealth)
 	r.Get("/readyz", handleReadiness(deps.ReadinessCheck))
+
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/trading-stations/list", deps.TradingStationHandler.List)
+	})
 
 	return r
 }
@@ -48,10 +52,4 @@ func handleReadiness(check func(context.Context) error) http.HandlerFunc {
 
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	}
-}
-
-func writeJSON(w http.ResponseWriter, statusCode int, payload any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	_ = json.NewEncoder(w).Encode(payload)
 }

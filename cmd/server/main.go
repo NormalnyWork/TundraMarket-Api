@@ -9,9 +9,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"tundraMarket/internal/config"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"tundraMarket/internal/config"
+	appstation "tundraMarket/internal/application/trading_station"
+	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
+	stationinfrastructure "tundraMarket/internal/infrastructure/trading_station"
 	httptransport "tundraMarket/internal/transport/http"
 )
 
@@ -43,8 +47,17 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	queries := sqlcdb.New(pool)
+
+	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
+
+	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
+
+	tradingStationHandler := httptransport.NewTradingStationHandler(tradingStationUC)
+
 	handler := httptransport.NewRouter(httptransport.Dependencies{
-		ReadinessCheck: pool.Ping,
+		ReadinessCheck:        pool.Ping,
+		TradingStationHandler: tradingStationHandler,
 	})
 
 	server := &http.Server{
