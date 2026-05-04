@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	appauth "tundraMarket/internal/application/auth"
+	domainauth "tundraMarket/internal/domain/auth"
 )
 
 type TokenIssuer struct {
@@ -24,7 +24,7 @@ func NewTokenIssuer(secret string, ttl time.Duration) *TokenIssuer {
 	}
 }
 
-func (i *TokenIssuer) Issue(claims appauth.TokenClaims) (string, error) {
+func (i *TokenIssuer) Issue(claims domainauth.TokenClaims) (string, error) {
 	now := time.Now()
 	payload := tokenPayload{
 		Role:             claims.Role,

@@ -5,13 +5,9 @@ import (
 	"errors"
 	"strings"
 
+	domainauth "tundraMarket/internal/domain/auth"
 	"tundraMarket/internal/domain/nomad"
 	tradingstation "tundraMarket/internal/domain/trading_station"
-)
-
-const (
-	RoleNomad          = "nomad"
-	RoleTradingStation = "trading_station"
 )
 
 var (
@@ -24,27 +20,16 @@ type Input struct {
 	TradingStationID *int32
 }
 
-type TokenClaims struct {
-	Role             string
-	Phone            string
-	NomadID          *int32
-	TradingStationID *int32
-}
-
-type TokenIssuer interface {
-	Issue(claims TokenClaims) (string, error)
-}
-
 type UseCase struct {
 	nomads   nomad.Repository
 	stations tradingstation.TradingStationRepository
-	tokens   TokenIssuer
+	tokens   domainauth.TokenIssuer
 }
 
 func NewUseCase(
 	nomads nomad.Repository,
 	stations tradingstation.TradingStationRepository,
-	tokens TokenIssuer,
+	tokens domainauth.TokenIssuer,
 ) *UseCase {
 	return &UseCase{
 		nomads:   nomads,
@@ -79,8 +64,8 @@ func (uc *UseCase) authNomad(ctx context.Context, phone string) (string, error) 
 	}
 
 	nomadID := n.ID()
-	return uc.tokens.Issue(TokenClaims{
-		Role:    RoleNomad,
+	return uc.tokens.Issue(domainauth.TokenClaims{
+		Role:    domainauth.RoleNomad,
 		Phone:   phone,
 		NomadID: &nomadID,
 	})
@@ -107,8 +92,8 @@ func (uc *UseCase) authTradingStation(ctx context.Context, phone string, station
 		return "", ErrUnauthorized
 	}
 
-	return uc.tokens.Issue(TokenClaims{
-		Role:             RoleTradingStation,
+	return uc.tokens.Issue(domainauth.TokenClaims{
+		Role:             domainauth.RoleTradingStation,
 		Phone:            phone,
 		TradingStationID: &stationID,
 	})

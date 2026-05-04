@@ -10,15 +10,15 @@ import (
 	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
 )
 
-type Repo struct {
+type NomadRepo struct {
 	q *sqlcdb.Queries
 }
 
-func NewRepo(q *sqlcdb.Queries) *Repo {
-	return &Repo{q: q}
+func NewNomadRepo(q *sqlcdb.Queries) *NomadRepo {
+	return &NomadRepo{q: q}
 }
 
-func (r *Repo) GetByPhone(ctx context.Context, phone string) (*domainnomad.Nomad, error) {
+func (r *NomadRepo) GetByPhone(ctx context.Context, phone string) (*domainnomad.Nomad, error) {
 	row, err := r.q.GetNomadByPhone(ctx, phone)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -29,7 +29,7 @@ func (r *Repo) GetByPhone(ctx context.Context, phone string) (*domainnomad.Nomad
 	return domainnomad.New(row.ID, row.Phone), nil
 }
 
-func (r *Repo) Create(ctx context.Context, phone string) (*domainnomad.Nomad, error) {
+func (r *NomadRepo) Create(ctx context.Context, phone string) (*domainnomad.Nomad, error) {
 	row, err := r.q.CreateNomad(ctx, phone)
 	if err != nil {
 		return nil, err

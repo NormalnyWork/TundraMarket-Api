@@ -54,8 +54,8 @@ func run(ctx context.Context) error {
 
 	queries := sqlcdb.New(pool)
 
-	nomadRepo := nomadinfrastructure.NewRepo(queries)
-	productRepo := productinfrastructure.NewRepo(queries)
+	nomadRepo := nomadinfrastructure.NewNomadRepo(queries)
+	productRepo := productinfrastructure.NewProductRepo(queries)
 	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
 	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
 

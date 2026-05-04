@@ -8,15 +8,15 @@ import (
 	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
 )
 
-type Repo struct {
+type ProductRepo struct {
 	q *sqlcdb.Queries
 }
 
-func NewRepo(q *sqlcdb.Queries) *Repo {
-	return &Repo{q: q}
+func NewProductRepo(q *sqlcdb.Queries) *ProductRepo {
+	return &ProductRepo{q: q}
 }
 
-func (r *Repo) GetAll(ctx context.Context) ([]*domainproduct.Product, error) {
+func (r *ProductRepo) GetAll(ctx context.Context) ([]*domainproduct.Product, error) {
 	rows, err := r.q.GetAllProducts(ctx)
 	if err != nil {
 		return nil, err
