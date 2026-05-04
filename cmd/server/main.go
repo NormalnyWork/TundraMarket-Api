@@ -13,8 +13,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	appauth "tundraMarket/internal/application/auth"
+	appproduct "tundraMarket/internal/application/product"
 	appstation "tundraMarket/internal/application/trading_station"
+	authinfrastructure "tundraMarket/internal/infrastructure/auth"
+	nomadinfrastructure "tundraMarket/internal/infrastructure/nomad"
 	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
+	productinfrastructure "tundraMarket/internal/infrastructure/product"
 	stationinfrastructure "tundraMarket/internal/infrastructure/trading_station"
 	httptransport "tundraMarket/internal/transport/http"
 )
@@ -49,14 +54,23 @@ func run(ctx context.Context) error {
 
 	queries := sqlcdb.New(pool)
 
+	nomadRepo := nomadinfrastructure.NewNomadRepo(queries)
+	productRepo := productinfrastructure.NewProductRepo(queries)
 	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
+	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
 
+	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, tokenIssuer)
+	productUC := appproduct.NewUseCase(productRepo)
 	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
 
+	authHandler := httptransport.NewAuthHandler(authUC)
+	productHandler := httptransport.NewProductHandler(productUC)
 	tradingStationHandler := httptransport.NewTradingStationHandler(tradingStationUC)
 
 	handler := httptransport.NewRouter(httptransport.Dependencies{
 		ReadinessCheck:        pool.Ping,
+		AuthHandler:           authHandler,
+		ProductHandler:        productHandler,
 		TradingStationHandler: tradingStationHandler,
 	})
 

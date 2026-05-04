@@ -20,3 +20,10 @@ func NumericToFloat64(n pgtype.Numeric) float64 {
 	f, _ := n.Float64Value()
 	return f.Float64
 }
+
+func Int4ToInt32(i pgtype.Int4) int32 {
+	if !i.Valid {
+		return 0
+	}
+	return i.Int32
+}

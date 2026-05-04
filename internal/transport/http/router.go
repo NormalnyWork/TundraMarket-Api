@@ -11,6 +11,8 @@ import (
 
 type Dependencies struct {
 	ReadinessCheck        func(context.Context) error
+	AuthHandler           *AuthHandler
+	ProductHandler        *ProductHandler
 	TradingStationHandler *TradingStationHandler
 }
 
@@ -25,6 +27,8 @@ func NewRouter(deps Dependencies) http.Handler {
 	r.Get("/readyz", handleReadiness(deps.ReadinessCheck))
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Post("/user/auth", deps.AuthHandler.Auth)
+		r.Get("/user/catalog", deps.ProductHandler.Catalog)
 		r.Get("/trading-stations/list", deps.TradingStationHandler.List)
 	})
 

@@ -2,6 +2,8 @@ package httptransport
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 
 	"google.golang.org/protobuf/proto"
@@ -26,4 +28,15 @@ func writeProto(w http.ResponseWriter, statusCode int, payload proto.Message) {
 
 func writeProtoError(w http.ResponseWriter, statusCode int, message string) {
 	http.Error(w, message, statusCode)
+}
+
+func readProto(r *http.Request, payload proto.Message) error {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	if len(b) == 0 {
+		return fmt.Errorf("empty request body")
+	}
+	return proto.Unmarshal(b, payload)
 }

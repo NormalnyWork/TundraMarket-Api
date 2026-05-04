@@ -10,7 +10,7 @@ import (
 )
 
 const getAllProducts = `-- name: GetAllProducts :many
-SELECT id, name, price, weight, volume, created_at FROM product ORDER BY id
+SELECT id, name, details, price, weight, volume, created_at FROM product ORDER BY id
 `
 
 func (q *Queries) GetAllProducts(ctx context.Context) ([]Product, error) {
@@ -25,6 +25,7 @@ func (q *Queries) GetAllProducts(ctx context.Context) ([]Product, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Details,
 			&i.Price,
 			&i.Weight,
 			&i.Volume,
@@ -41,7 +42,7 @@ func (q *Queries) GetAllProducts(ctx context.Context) ([]Product, error) {
 }
 
 const getProductByID = `-- name: GetProductByID :one
-SELECT id, name, price, weight, volume, created_at FROM product WHERE id = $1
+SELECT id, name, details, price, weight, volume, created_at FROM product WHERE id = $1
 `
 
 func (q *Queries) GetProductByID(ctx context.Context, id int32) (Product, error) {
@@ -50,6 +51,7 @@ func (q *Queries) GetProductByID(ctx context.Context, id int32) (Product, error)
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Details,
 		&i.Price,
 		&i.Weight,
 		&i.Volume,
@@ -59,7 +61,7 @@ func (q *Queries) GetProductByID(ctx context.Context, id int32) (Product, error)
 }
 
 const getProductsByIDs = `-- name: GetProductsByIDs :many
-SELECT id, name, price, weight, volume, created_at FROM product WHERE id = ANY($1::int[])
+SELECT id, name, details, price, weight, volume, created_at FROM product WHERE id = ANY($1::int[])
 `
 
 func (q *Queries) GetProductsByIDs(ctx context.Context, dollar_1 []int32) ([]Product, error) {
@@ -74,6 +76,7 @@ func (q *Queries) GetProductsByIDs(ctx context.Context, dollar_1 []int32) ([]Pro
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Details,
 			&i.Price,
 			&i.Weight,
 			&i.Volume,

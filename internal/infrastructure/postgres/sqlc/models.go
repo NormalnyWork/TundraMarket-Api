@@ -88,6 +88,7 @@ type OrdersToProduct struct {
 type Product struct {
 	ID        int32
 	Name      string
+	Details   pgtype.Text
 	Price     pgtype.Int4
 	Weight    pgtype.Int4
 	Volume    pgtype.Int4
