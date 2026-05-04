@@ -5,6 +5,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=disable
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET}
+      AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL}
     depends_on:
       postgres:
         condition: service_healthy

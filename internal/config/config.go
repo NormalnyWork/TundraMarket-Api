@@ -10,6 +10,8 @@ import (
 type Config struct {
 	HTTPAddr          string
 	DatabaseURL       string
+	AuthTokenSecret   string
+	AuthTokenTTL      time.Duration
 	DBConnectTimeout  time.Duration
 	ShutdownTimeout   time.Duration
 	ReadHeaderTimeout time.Duration
@@ -22,6 +24,8 @@ func Load() (Config, error) {
 	cfg := Config{
 		HTTPAddr:          envString("HTTP_ADDR", ":8000"),
 		DatabaseURL:       strings.TrimSpace(os.Getenv("DATABASE_URL")),
+		AuthTokenSecret:   strings.TrimSpace(os.Getenv("AUTH_TOKEN_SECRET")),
+		AuthTokenTTL:      365 * 24 * time.Hour,
 		DBConnectTimeout:  5 * time.Second,
 		ShutdownTimeout:   10 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -33,8 +37,14 @@ func Load() (Config, error) {
 	if cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("DATABASE_URL is required")
 	}
+	if cfg.AuthTokenSecret == "" {
+		return Config{}, fmt.Errorf("AUTH_TOKEN_SECRET is required")
+	}
 
 	var err error
+	if cfg.AuthTokenTTL, err = envDuration("AUTH_TOKEN_TTL", cfg.AuthTokenTTL); err != nil {
+		return Config{}, err
+	}
 	if cfg.DBConnectTimeout, err = envDuration("DB_CONNECT_TIMEOUT", cfg.DBConnectTimeout); err != nil {
 		return Config{}, err
 	}

@@ -80,3 +80,31 @@ func (q *Queries) GetTradingStationByPhone(ctx context.Context, phone pgtype.Tex
 	)
 	return i, err
 }
+
+const setTradingStationPhone = `-- name: SetTradingStationPhone :one
+UPDATE trading_station
+SET phone = $2,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, phone, name, longitude, latitude, created_at, updated_at
+`
+
+type SetTradingStationPhoneParams struct {
+	ID    int32
+	Phone pgtype.Text
+}
+
+func (q *Queries) SetTradingStationPhone(ctx context.Context, arg SetTradingStationPhoneParams) (TradingStation, error) {
+	row := q.db.QueryRow(ctx, setTradingStationPhone, arg.ID, arg.Phone)
+	var i TradingStation
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.Name,
+		&i.Longitude,
+		&i.Latitude,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
