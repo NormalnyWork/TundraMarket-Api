@@ -14,8 +14,8 @@ func ToProtoList(trading_station []*tradingstation.TradingStation) *tradingstati
 			Name:  ts.Name(),
 			Phone: ts.Phone(),
 			Location: &commonv1.Location{
-				Longitude: ts.Longitude(),
-				Latitude:  ts.Latitude(),
+				Longitude: float32(ts.Longitude()),
+				Latitude:  float32(ts.Latitude()),
 			},
 		}
 	}
