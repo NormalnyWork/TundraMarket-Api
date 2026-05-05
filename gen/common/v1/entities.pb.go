@@ -23,8 +23,8 @@ const (
 
 type Location struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Longitude     float64                `protobuf:"fixed64,1,opt,name=longitude,proto3" json:"longitude,omitempty"`
-	Latitude      float64                `protobuf:"fixed64,2,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	Longitude     float32                `protobuf:"fixed32,1,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	Latitude      float32                `protobuf:"fixed32,2,opt,name=latitude,proto3" json:"latitude,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -59,14 +59,14 @@ func (*Location) Descriptor() ([]byte, []int) {
 	return file_common_v1_entities_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Location) GetLongitude() float64 {
+func (x *Location) GetLongitude() float32 {
 	if x != nil {
 		return x.Longitude
 	}
 	return 0
 }
 
-func (x *Location) GetLatitude() float64 {
+func (x *Location) GetLatitude() float32 {
 	if x != nil {
 		return x.Latitude
 	}
@@ -427,8 +427,8 @@ const file_common_v1_entities_proto_rawDesc = "" +
 	"\n" +
 	"\x18common/v1/entities.proto\x12\tcommon.v1\x1a\x15common/v1/enums.proto\"D\n" +
 	"\bLocation\x12\x1c\n" +
-	"\tlongitude\x18\x01 \x01(\x01R\tlongitude\x12\x1a\n" +
-	"\blatitude\x18\x02 \x01(\x01R\blatitude\"N\n" +
+	"\tlongitude\x18\x01 \x01(\x02R\tlongitude\x12\x1a\n" +
+	"\blatitude\x18\x02 \x01(\x02R\blatitude\"N\n" +
 	"\rStatusHistory\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x12\n" +
 	"\x04time\x18\x02 \x01(\x03R\x04time\"4\n" +
