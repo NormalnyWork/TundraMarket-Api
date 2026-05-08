@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"time"
+	domainauth "tundraMarket/internal/domain/auth"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -11,6 +12,7 @@ import (
 
 type Dependencies struct {
 	ReadinessCheck        func(context.Context) error
+	TokenIssuer           domainauth.TokenIssuer
 	AuthHandler           *AuthHandler
 	ProductHandler        *ProductHandler
 	TradingStationHandler *TradingStationHandler
@@ -30,6 +32,11 @@ func NewRouter(deps Dependencies) http.Handler {
 		r.Post("/user/auth", deps.AuthHandler.Auth)
 		r.Get("/user/catalog", deps.ProductHandler.Catalog)
 		r.Get("/trading-stations/list", deps.TradingStationHandler.List)
+
+		r.Group(func(r chi.Router) {
+			r.Use(JWTMiddleware(deps.TokenIssuer))
+
+		})
 	})
 
 	return r

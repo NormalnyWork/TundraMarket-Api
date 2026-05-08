@@ -14,4 +14,5 @@ type TokenClaims struct {
 
 type TokenIssuer interface {
 	Issue(claims TokenClaims) (string, error)
+	Verify(token string) (*TokenClaims, error)
 }

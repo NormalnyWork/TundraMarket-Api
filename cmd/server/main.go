@@ -57,6 +57,7 @@ func run(ctx context.Context) error {
 	nomadRepo := nomadinfrastructure.NewNomadRepo(queries)
 	productRepo := productinfrastructure.NewProductRepo(queries)
 	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
+
 	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
 
 	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, tokenIssuer)
@@ -69,6 +70,7 @@ func run(ctx context.Context) error {
 
 	handler := httptransport.NewRouter(httptransport.Dependencies{
 		ReadinessCheck:        pool.Ping,
+		TokenIssuer:           tokenIssuer,
 		AuthHandler:           authHandler,
 		ProductHandler:        productHandler,
 		TradingStationHandler: tradingStationHandler,

@@ -84,3 +84,37 @@ func sign(value string, secret []byte) string {
 	_, _ = mac.Write([]byte(value))
 	return base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 }
+
+func (i *TokenIssuer) Verify(token string) (*domainauth.TokenClaims, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid token format")
+	}
+
+	signingInput := strings.Join(parts[:2], ".")
+	expectedSig := sign(signingInput, i.secret)
+	if !hmac.Equal([]byte(parts[2]), []byte(expectedSig)) {
+		return nil, fmt.Errorf("invalid signature")
+	}
+
+	b, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("invalid payload")
+	}
+
+	var payload tokenPayload
+	if err := json.Unmarshal(b, &payload); err != nil {
+		return nil, fmt.Errorf("invalid payload json")
+	}
+
+	if time.Now().Unix() > payload.ExpiresAt {
+		return nil, fmt.Errorf("token expired")
+	}
+
+	return &domainauth.TokenClaims{
+		Role:             payload.Role,
+		Phone:            payload.Phone,
+		NomadID:          payload.NomadID,
+		TradingStationID: payload.TradingStationID,
+	}, nil
+}
