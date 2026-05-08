@@ -4,11 +4,11 @@ type TradingStation struct {
 	id        int32
 	name      string
 	phone     *string
-	longitude float64
-	latitude  float64
+	longitude float32
+	latitude  float32
 }
 
-func New(id int32, name string, phone *string, longitude, latitude float64) *TradingStation {
+func New(id int32, name string, phone *string, longitude, latitude float32) *TradingStation {
 	return &TradingStation{
 		id:        id,
 		name:      name,
@@ -21,5 +21,5 @@ func New(id int32, name string, phone *string, longitude, latitude float64) *Tra
 func (ts *TradingStation) ID() int32          { return ts.id }
 func (ts *TradingStation) Name() string       { return ts.name }
 func (ts *TradingStation) Phone() *string     { return ts.phone }
-func (ts *TradingStation) Longitude() float64 { return ts.longitude }
-func (ts *TradingStation) Latitude() float64  { return ts.latitude }
+func (ts *TradingStation) Longitude() float32 { return ts.longitude }
+func (ts *TradingStation) Latitude() float32  { return ts.latitude }

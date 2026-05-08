@@ -32,8 +32,8 @@ func (r *TradingStationRepo) GetAll(ctx context.Context) ([]*tradingstation.Trad
 			row.ID,
 			postgres.TextToString(row.Name),
 			postgres.TextToStringPtr(row.Phone),
-			postgres.NumericToFloat64(row.Longitude),
-			postgres.NumericToFloat64(row.Latitude),
+			postgres.NumericToFloat32(row.Longitude),
+			postgres.NumericToFloat32(row.Latitude),
 		)
 	}
 	return result, nil
@@ -51,8 +51,8 @@ func (r *TradingStationRepo) GetByID(ctx context.Context, id int32) (*tradingsta
 		row.ID,
 		postgres.TextToString(row.Name),
 		postgres.TextToStringPtr(row.Phone),
-		postgres.NumericToFloat64(row.Longitude),
-		postgres.NumericToFloat64(row.Latitude),
+		postgres.NumericToFloat32(row.Longitude),
+		postgres.NumericToFloat32(row.Latitude),
 	), nil
 }
 
@@ -74,7 +74,7 @@ func (r *TradingStationRepo) SetPhone(ctx context.Context, id int32, phone strin
 		row.ID,
 		postgres.TextToString(row.Name),
 		postgres.TextToStringPtr(row.Phone),
-		postgres.NumericToFloat64(row.Longitude),
-		postgres.NumericToFloat64(row.Latitude),
+		postgres.NumericToFloat32(row.Longitude),
+		postgres.NumericToFloat32(row.Latitude),
 	), nil
 }

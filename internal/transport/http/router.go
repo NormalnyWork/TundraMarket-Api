@@ -16,6 +16,7 @@ type Dependencies struct {
 	AuthHandler           *AuthHandler
 	ProductHandler        *ProductHandler
 	TradingStationHandler *TradingStationHandler
+	OrderHandler          *OrderHandler
 }
 
 func NewRouter(deps Dependencies) http.Handler {
@@ -35,6 +36,7 @@ func NewRouter(deps Dependencies) http.Handler {
 
 		r.Group(func(r chi.Router) {
 			r.Use(JWTMiddleware(deps.TokenIssuer))
+			r.Post("/order/create", deps.OrderHandler.Create)
 
 		})
 	})

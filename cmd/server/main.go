@@ -14,14 +14,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	appauth "tundraMarket/internal/application/auth"
+	apporder "tundraMarket/internal/application/order"
 	appproduct "tundraMarket/internal/application/product"
 	appstation "tundraMarket/internal/application/trading_station"
 	authinfrastructure "tundraMarket/internal/infrastructure/auth"
 	nomadinfrastructure "tundraMarket/internal/infrastructure/nomad"
-	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
+	orderinfrastructure "tundraMarket/internal/infrastructure/order"
 	productinfrastructure "tundraMarket/internal/infrastructure/product"
 	stationinfrastructure "tundraMarket/internal/infrastructure/trading_station"
 	httptransport "tundraMarket/internal/transport/http"
+
+	sqlcdb "tundraMarket/internal/infrastructure/postgres/sqlc"
 )
 
 func main() {
@@ -57,22 +60,26 @@ func run(ctx context.Context) error {
 	nomadRepo := nomadinfrastructure.NewNomadRepo(queries)
 	productRepo := productinfrastructure.NewProductRepo(queries)
 	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
+	orderRepo := orderinfrastructure.NewOrderRepo(pool, queries)
 
 	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
 
 	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, tokenIssuer)
 	productUC := appproduct.NewUseCase(productRepo)
 	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
+	orderUC := apporder.NewUseCase(orderRepo)
 
 	authHandler := httptransport.NewAuthHandler(authUC)
 	productHandler := httptransport.NewProductHandler(productUC)
 	tradingStationHandler := httptransport.NewTradingStationHandler(tradingStationUC)
+	orderHandler := httptransport.NewOrderHandler(orderUC)
 
 	handler := httptransport.NewRouter(httptransport.Dependencies{
 		ReadinessCheck:        pool.Ping,
 		TokenIssuer:           tokenIssuer,
 		AuthHandler:           authHandler,
 		ProductHandler:        productHandler,
+		OrderHandler:          orderHandler,
 		TradingStationHandler: tradingStationHandler,
 	})
 
