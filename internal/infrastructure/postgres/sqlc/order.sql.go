@@ -199,20 +199,63 @@ func (q *Queries) GetOrdersByStationAndCategory(ctx context.Context, arg GetOrde
 	return items, nil
 }
 
-const getOrdersUpdatedAfter = `-- name: GetOrdersUpdatedAfter :many
-SELECT id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at FROM orders
-WHERE nomad_id = $1
-  AND created_at > to_timestamp($2)
-ORDER BY created_at DESC
+const getOrdersByNomadIDUpdatedAfter = `-- name: GetOrdersByNomadIDUpdatedAfter :many
+SELECT DISTINCT o.id, o.nomad_id, o.trading_station_id, o.status, o.longitude, o.latitude, o.comment, o.created_at FROM orders o
+LEFT JOIN status_history sh ON sh.orders_id = o.id
+WHERE o.nomad_id = $1
+  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
+ORDER BY o.created_at DESC
 `
 
-type GetOrdersUpdatedAfterParams struct {
+type GetOrdersByNomadIDUpdatedAfterParams struct {
 	NomadID     pgtype.Int4
 	ToTimestamp float64
 }
 
-func (q *Queries) GetOrdersUpdatedAfter(ctx context.Context, arg GetOrdersUpdatedAfterParams) ([]Order, error) {
-	rows, err := q.db.Query(ctx, getOrdersUpdatedAfter, arg.NomadID, arg.ToTimestamp)
+func (q *Queries) GetOrdersByNomadIDUpdatedAfter(ctx context.Context, arg GetOrdersByNomadIDUpdatedAfterParams) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByNomadIDUpdatedAfter, arg.NomadID, arg.ToTimestamp)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.NomadID,
+			&i.TradingStationID,
+			&i.Status,
+			&i.Longitude,
+			&i.Latitude,
+			&i.Comment,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrdersByStationUpdatedAfter = `-- name: GetOrdersByStationUpdatedAfter :many
+SELECT DISTINCT o.id, o.nomad_id, o.trading_station_id, o.status, o.longitude, o.latitude, o.comment, o.created_at FROM orders o
+LEFT JOIN status_history sh ON sh.orders_id = o.id
+WHERE o.trading_station_id = $1
+  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
+ORDER BY o.created_at DESC
+`
+
+type GetOrdersByStationUpdatedAfterParams struct {
+	TradingStationID pgtype.Int4
+	ToTimestamp      float64
+}
+
+func (q *Queries) GetOrdersByStationUpdatedAfter(ctx context.Context, arg GetOrdersByStationUpdatedAfterParams) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByStationUpdatedAfter, arg.TradingStationID, arg.ToTimestamp)
 	if err != nil {
 		return nil, err
 	}
@@ -242,18 +285,20 @@ func (q *Queries) GetOrdersUpdatedAfter(ctx context.Context, arg GetOrdersUpdate
 
 const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE orders
-SET status = $2
+SET status = $2,
+    comment = COALESCE($3, comment)
 WHERE id = $1
     RETURNING id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at
 `
 
 type UpdateOrderStatusParams struct {
-	ID     int32
-	Status Status
+	ID      int32
+	Status  Status
+	Comment pgtype.Text
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
-	row := q.db.QueryRow(ctx, updateOrderStatus, arg.ID, arg.Status)
+	row := q.db.QueryRow(ctx, updateOrderStatus, arg.ID, arg.Status, arg.Comment)
 	var i Order
 	err := row.Scan(
 		&i.ID,

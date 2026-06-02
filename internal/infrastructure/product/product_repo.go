@@ -22,6 +22,19 @@ func (r *ProductRepo) GetAll(ctx context.Context) ([]*domainproduct.Product, err
 		return nil, err
 	}
 
+	return productsToDomain(rows), nil
+}
+
+func (r *ProductRepo) GetByIDs(ctx context.Context, ids []int32) ([]*domainproduct.Product, error) {
+	rows, err := r.q.GetProductsByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	return productsToDomain(rows), nil
+}
+
+func productsToDomain(rows []sqlcdb.Product) []*domainproduct.Product {
 	result := make([]*domainproduct.Product, len(rows))
 	for i, row := range rows {
 		result[i] = domainproduct.New(
@@ -32,5 +45,5 @@ func (r *ProductRepo) GetAll(ctx context.Context) ([]*domainproduct.Product, err
 			postgres.Int4ToInt32(row.Volume),
 		)
 	}
-	return result, nil
+	return result
 }

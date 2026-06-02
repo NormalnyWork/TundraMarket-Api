@@ -16,7 +16,8 @@ ORDER BY created_at DESC
 
 -- name: UpdateOrderStatus :one
 UPDATE orders
-SET status = $2
+SET status = $2,
+    comment = COALESCE($3, comment)
 WHERE id = $1
     RETURNING *;
 
@@ -33,11 +34,12 @@ LIMIT  $2
 OFFSET COALESCE(sqlc.arg(anchor)::int, 0);
 
 
--- name: GetOrdersUpdatedAfter :many
-SELECT * FROM orders
-WHERE nomad_id = $1
-  AND created_at > to_timestamp($2)
-ORDER BY created_at DESC;
+-- name: GetOrdersByNomadIDUpdatedAfter :many
+SELECT DISTINCT o.* FROM orders o
+LEFT JOIN status_history sh ON sh.orders_id = o.id
+WHERE o.nomad_id = $1
+  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
+ORDER BY o.created_at DESC;
 
 -- name: GetOrdersByStationAndCategory :many
 SELECT * FROM orders
@@ -50,3 +52,10 @@ END
 ORDER BY created_at DESC
 LIMIT  $2
 OFFSET COALESCE(sqlc.arg(anchor)::int, 0);
+
+-- name: GetOrdersByStationUpdatedAfter :many
+SELECT DISTINCT o.* FROM orders o
+LEFT JOIN status_history sh ON sh.orders_id = o.id
+WHERE o.trading_station_id = $1
+  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
+ORDER BY o.created_at DESC;

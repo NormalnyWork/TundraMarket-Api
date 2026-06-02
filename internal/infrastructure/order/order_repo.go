@@ -53,11 +53,18 @@ func (r *OrderRepo) Save(ctx context.Context, o *domainorder.Order) (*domainorde
 		}
 	}
 
+	if err = qtx.AddStatusHistory(ctx, sqlcdb.AddStatusHistoryParams{
+		OrdersID: row.ID,
+		Status:   statusToNullStatus(domainorder.StatusCreated),
+	}); err != nil {
+		return nil, err
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
-	return rowToDomain(row, o.Products()), nil
+	return r.GetByID(ctx, row.ID)
 }
 
 func (r *OrderRepo) GetByID(ctx context.Context, id int32) (*domainorder.Order, error) {
@@ -69,7 +76,116 @@ func (r *OrderRepo) GetByID(ctx context.Context, id int32) (*domainorder.Order, 
 		return nil, err
 	}
 
+	return r.rowToDomain(ctx, row)
+}
+
+func (r *OrderRepo) ChangeStatus(ctx context.Context, id int32, status domainorder.Status, comment *string) (*domainorder.Order, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	qtx := r.q.WithTx(tx)
+
+	row, err := qtx.UpdateOrderStatus(ctx, sqlcdb.UpdateOrderStatusParams{
+		ID:      id,
+		Status:  statusToSQLC(status),
+		Comment: textFromPointer(comment),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainorder.ErrInvalidId
+		}
+		return nil, err
+	}
+
+	if err = qtx.AddStatusHistory(ctx, sqlcdb.AddStatusHistoryParams{
+		OrdersID: row.ID,
+		Status:   statusToNullStatus(status),
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return r.GetByID(ctx, row.ID)
+}
+
+func (r *OrderRepo) ListByNomad(ctx context.Context, nomadID int32, category domainorder.OrderCategory, anchor, pageSize int32) ([]*domainorder.Order, error) {
+	rows, err := r.q.GetOrdersByNomadIDAndCategory(ctx, sqlcdb.GetOrdersByNomadIDAndCategoryParams{
+		NomadID:       pgtype.Int4{Int32: nomadID, Valid: true},
+		Limit:         pageSize,
+		OrderCategory: string(category),
+		Anchor:        anchor,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.rowsToDomain(ctx, rows)
+}
+
+func (r *OrderRepo) ListByTradingStation(ctx context.Context, tradingStationID int32, category domainorder.OrderCategory, anchor, pageSize int32) ([]*domainorder.Order, error) {
+	rows, err := r.q.GetOrdersByStationAndCategory(ctx, sqlcdb.GetOrdersByStationAndCategoryParams{
+		TradingStationID: pgtype.Int4{Int32: tradingStationID, Valid: true},
+		Limit:            pageSize,
+		OrderCategory:    string(category),
+		Anchor:           anchor,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.rowsToDomain(ctx, rows)
+}
+
+func (r *OrderRepo) GetUpdatesByNomad(ctx context.Context, nomadID int32, afterUnix int64) ([]*domainorder.Order, error) {
+	rows, err := r.q.GetOrdersByNomadIDUpdatedAfter(ctx, sqlcdb.GetOrdersByNomadIDUpdatedAfterParams{
+		NomadID:     pgtype.Int4{Int32: nomadID, Valid: true},
+		ToTimestamp: float64(afterUnix),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.rowsToDomain(ctx, rows)
+}
+
+func (r *OrderRepo) GetUpdatesByTradingStation(ctx context.Context, tradingStationID int32, afterUnix int64) ([]*domainorder.Order, error) {
+	rows, err := r.q.GetOrdersByStationUpdatedAfter(ctx, sqlcdb.GetOrdersByStationUpdatedAfterParams{
+		TradingStationID: pgtype.Int4{Int32: tradingStationID, Valid: true},
+		ToTimestamp:      float64(afterUnix),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.rowsToDomain(ctx, rows)
+}
+
+func (r *OrderRepo) rowsToDomain(ctx context.Context, rows []sqlcdb.Order) ([]*domainorder.Order, error) {
+	orders := make([]*domainorder.Order, len(rows))
+	for i, row := range rows {
+		order, err := r.rowToDomain(ctx, row)
+		if err != nil {
+			return nil, err
+		}
+		orders[i] = order
+	}
+
+	return orders, nil
+}
+
+func (r *OrderRepo) rowToDomain(ctx context.Context, row sqlcdb.Order) (*domainorder.Order, error) {
 	products, err := r.q.GetProductsByOrderID(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	historyRows, err := r.q.GetStatusHistoryByOrderID(ctx, row.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +198,11 @@ func (r *OrderRepo) GetByID(ctx context.Context, id int32) (*domainorder.Order, 
 		}
 	}
 
-	return rowToDomain(row, items), nil
-}
+	history := make([]domainorder.StatusHistory, len(historyRows))
+	for i, item := range historyRows {
+		history[i] = domainorder.NewStatusHistory(domainorder.Status(item.Status.Status), item.CreatedAt.Time)
+	}
 
-func rowToDomain(row sqlcdb.Order, products []domainorder.ProductCount) *domainorder.Order {
 	return domainorder.Restore(
 		row.ID,
 		postgres.Int4ToInt32(row.NomadID),
@@ -94,7 +211,30 @@ func rowToDomain(row sqlcdb.Order, products []domainorder.ProductCount) *domaino
 		postgres.TextToString(row.Comment),
 		postgres.NumericToFloat32(row.Longitude),
 		postgres.NumericToFloat32(row.Latitude),
-		products,
+		items,
+		history,
 		row.CreatedAt.Time,
-	)
+	), nil
+}
+
+func statusToSQLC(status domainorder.Status) sqlcdb.Status {
+	return sqlcdb.Status(status)
+}
+
+func statusToNullStatus(status domainorder.Status) sqlcdb.NullStatus {
+	return sqlcdb.NullStatus{
+		Status: statusToSQLC(status),
+		Valid:  true,
+	}
+}
+
+func textFromPointer(value *string) pgtype.Text {
+	if value == nil {
+		return pgtype.Text{}
+	}
+
+	return pgtype.Text{
+		String: *value,
+		Valid:  true,
+	}
 }

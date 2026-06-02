@@ -37,7 +37,9 @@ func NewRouter(deps Dependencies) http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(JWTMiddleware(deps.TokenIssuer))
 			r.Post("/order/create", deps.OrderHandler.Create)
-
+			r.Post("/order/change-status", deps.OrderHandler.ChangeStatus)
+			r.Get("/order/list", deps.OrderHandler.List)
+			r.Get("/order/updates", deps.OrderHandler.Updates)
 		})
 	})
 
