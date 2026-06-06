@@ -130,8 +130,6 @@ func ToOrderProto(order *domainorder.Order) *commonv1.Order {
 
 func domainStatusToProto(status domainorder.Status) commonv1.Status {
 	switch status {
-	case domainorder.StatusCreated:
-		return commonv1.Status_STATUS_CREATED
 	case domainorder.StatusProcessing:
 		return commonv1.Status_STATUS_PROCESSING
 	case domainorder.StatusSent:
@@ -143,6 +141,6 @@ func domainStatusToProto(status domainorder.Status) commonv1.Status {
 	case domainorder.StatusDenied:
 		return commonv1.Status_STATUS_DENIED
 	default:
-		return commonv1.Status_STATUS_UNSPECIFIED
+		return commonv1.Status_STATUS_CREATED
 	}
 }

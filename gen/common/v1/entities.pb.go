@@ -115,7 +115,7 @@ func (x *StatusHistory) GetStatus() Status {
 	if x != nil {
 		return x.Status
 	}
-	return Status_STATUS_UNSPECIFIED
+	return Status_STATUS_CREATED
 }
 
 func (x *StatusHistory) GetTime() int64 {
@@ -390,7 +390,7 @@ func (x *Order) GetStatus() Status {
 	if x != nil {
 		return x.Status
 	}
-	return Status_STATUS_UNSPECIFIED
+	return Status_STATUS_CREATED
 }
 
 func (x *Order) GetHistory() []*StatusHistory {

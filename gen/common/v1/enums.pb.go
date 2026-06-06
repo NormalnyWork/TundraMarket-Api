@@ -24,34 +24,31 @@ const (
 type Status int32
 
 const (
-	Status_STATUS_UNSPECIFIED Status = 0
-	Status_STATUS_PROCESSING  Status = 1
-	Status_STATUS_SENT        Status = 2
-	Status_STATUS_COMPLETED   Status = 3
-	Status_STATUS_CANCELLED   Status = 4
-	Status_STATUS_DENIED      Status = 5
-	Status_STATUS_CREATED     Status = 6
+	Status_STATUS_CREATED    Status = 0
+	Status_STATUS_PROCESSING Status = 1
+	Status_STATUS_SENT       Status = 2
+	Status_STATUS_COMPLETED  Status = 3
+	Status_STATUS_CANCELLED  Status = 4
+	Status_STATUS_DENIED     Status = 5
 )
 
 // Enum value maps for Status.
 var (
 	Status_name = map[int32]string{
-		0: "STATUS_UNSPECIFIED",
+		0: "STATUS_CREATED",
 		1: "STATUS_PROCESSING",
 		2: "STATUS_SENT",
 		3: "STATUS_COMPLETED",
 		4: "STATUS_CANCELLED",
 		5: "STATUS_DENIED",
-		6: "STATUS_CREATED",
 	}
 	Status_value = map[string]int32{
-		"STATUS_UNSPECIFIED": 0,
-		"STATUS_PROCESSING":  1,
-		"STATUS_SENT":        2,
-		"STATUS_COMPLETED":   3,
-		"STATUS_CANCELLED":   4,
-		"STATUS_DENIED":      5,
-		"STATUS_CREATED":     6,
+		"STATUS_CREATED":    0,
+		"STATUS_PROCESSING": 1,
+		"STATUS_SENT":       2,
+		"STATUS_COMPLETED":  3,
+		"STATUS_CANCELLED":  4,
+		"STATUS_DENIED":     5,
 	}
 )
 
@@ -193,15 +190,14 @@ var File_common_v1_enums_proto protoreflect.FileDescriptor
 
 const file_common_v1_enums_proto_rawDesc = "" +
 	"\n" +
-	"\x15common/v1/enums.proto\x12\tcommon.v1*\x9b\x01\n" +
-	"\x06Status\x12\x16\n" +
-	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x15common/v1/enums.proto\x12\tcommon.v1*\x83\x01\n" +
+	"\x06Status\x12\x12\n" +
+	"\x0eSTATUS_CREATED\x10\x00\x12\x15\n" +
 	"\x11STATUS_PROCESSING\x10\x01\x12\x0f\n" +
 	"\vSTATUS_SENT\x10\x02\x12\x14\n" +
 	"\x10STATUS_COMPLETED\x10\x03\x12\x14\n" +
 	"\x10STATUS_CANCELLED\x10\x04\x12\x11\n" +
-	"\rSTATUS_DENIED\x10\x05\x12\x12\n" +
-	"\x0eSTATUS_CREATED\x10\x06*b\n" +
+	"\rSTATUS_DENIED\x10\x05*b\n" +
 	"\rOrderCategory\x12\x16\n" +
 	"\x12ORDER_CATEGORY_NEW\x10\x00\x12\x1d\n" +
 	"\x19ORDER_CATEGORY_PROCESSING\x10\x01\x12\x1a\n" +
