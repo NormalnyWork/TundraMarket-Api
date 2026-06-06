@@ -22,6 +22,7 @@ type Dependencies struct {
 func NewRouter(deps Dependencies) http.Handler {
 	r := chi.NewRouter()
 
+	r.Use(middleware.Logger)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
@@ -38,8 +39,8 @@ func NewRouter(deps Dependencies) http.Handler {
 			r.Use(JWTMiddleware(deps.TokenIssuer))
 			r.Post("/order/create", deps.OrderHandler.Create)
 			r.Post("/order/change-status", deps.OrderHandler.ChangeStatus)
-			r.Get("/order/list", deps.OrderHandler.List)
-			r.Get("/order/updates", deps.OrderHandler.Updates)
+			r.Post("/order/list", deps.OrderHandler.List)
+			r.Post("/order/updates", deps.OrderHandler.Updates)
 		})
 	})
 
