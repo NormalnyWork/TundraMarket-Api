@@ -5,12 +5,13 @@ package common.v1;
 option go_package = "tundraMarket/gen/common/v1;commonv1";
 
 enum Status {
-  STATUS_CREATED    = 0;
-  STATUS_PROCESSING = 1;
-  STATUS_SENT       = 2;
-  STATUS_COMPLETED  = 3;
-  STATUS_CANCELLED  = 4;
-  STATUS_DENIED     = 5;
+  STATUS_UNSPECIFIED = 0;
+  STATUS_PROCESSING  = 1;
+  STATUS_SENT        = 2;
+  STATUS_COMPLETED   = 3;
+  STATUS_CANCELLED   = 4;
+  STATUS_DENIED      = 5;
+  STATUS_CREATED     = 6;
 }
 
 enum OrderCategory {
