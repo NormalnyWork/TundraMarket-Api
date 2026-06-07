@@ -59,6 +59,16 @@ type UseCase struct {
 	productRepo        domainproduct.Repository
 }
 
+type CheckStatusInput struct {
+	NomadID int32
+	After   int64 // unix seconds
+}
+
+type CheckStatusOutput struct {
+	OrderID int32
+	History []domainorder.StatusHistory
+}
+
 func NewUseCase(repo domainorder.OrderRepository, tradingStationRepo domainstation.TradingStationRepository, productRepo domainproduct.Repository) *UseCase {
 	return &UseCase{
 		repo:               repo,
@@ -268,4 +278,24 @@ func isKnownCategory(category domainorder.OrderCategory) bool {
 
 func (uc *UseCase) GetCurrentOrder(ctx context.Context, nomadID int32) (*domainorder.Order, error) {
 	return uc.repo.GetCurrentByNomadID(ctx, nomadID)
+}
+
+func (uc *UseCase) CheckStatus(ctx context.Context, in CheckStatusInput) (*CheckStatusOutput, error) {
+	order, err := uc.repo.GetCurrentByNomadID(ctx, in.NomadID)
+	if err != nil {
+		return nil, err
+	}
+
+	// фильтруем историю — только новее чем after
+	var filtered []domainorder.StatusHistory
+	for _, h := range order.History() {
+		if h.CreatedAt().Unix() > in.After {
+			filtered = append(filtered, h)
+		}
+	}
+
+	return &CheckStatusOutput{
+		OrderID: order.ID(),
+		History: filtered,
+	}, nil
 }
