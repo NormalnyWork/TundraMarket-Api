@@ -203,3 +203,32 @@ func (h *OrderHandler) CurrentOrder(w http.ResponseWriter, r *http.Request) {
 
 	writeProto(w, http.StatusOK, apporder.ToCurrentOrderProto(order))
 }
+
+func (h *OrderHandler) CheckStatus(w http.ResponseWriter, r *http.Request) {
+	claims := ClaimsFromContext(r.Context())
+	if claims == nil {
+		writeProtoError(w, http.StatusUnauthorized, "UNAUTHORIZED")
+		return
+	}
+	if claims.NomadID == nil {
+		writeProtoError(w, http.StatusForbidden, "NOMAD_ONLY")
+		return
+	}
+
+	var req orderv1.OrderCheckStatusIn
+	if err := readProtoAllowEmpty(r, &req); err != nil {
+		writeProtoError(w, http.StatusBadRequest, "INVALID_REQUEST_BODY")
+		return
+	}
+
+	out, err := h.uc.CheckStatus(r.Context(), apporder.CheckStatusInput{
+		NomadID: *claims.NomadID,
+		After:   req.GetTime(),
+	})
+	if err != nil {
+		handleOrderError(w, err)
+		return
+	}
+
+	writeProto(w, http.StatusOK, apporder.ToCheckStatusProto(out))
+}
