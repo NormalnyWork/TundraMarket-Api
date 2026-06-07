@@ -238,3 +238,15 @@ func textFromPointer(value *string) pgtype.Text {
 		Valid:  true,
 	}
 }
+
+func (r *OrderRepo) GetCurrentByNomadID(ctx context.Context, nomadID int32) (*domainorder.Order, error) {
+	row, err := r.q.GetCurrentOrderByNomadID(ctx, pgtype.Int4{Int32: nomadID, Valid: true})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainorder.ErrInvalidId
+		}
+		return nil, err
+	}
+
+	return r.rowToDomain(ctx, row)
+}

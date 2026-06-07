@@ -36,3 +36,14 @@ func (r *NomadRepo) Create(ctx context.Context, phone string) (*domainnomad.Noma
 	}
 	return domainnomad.New(row.ID, row.Phone), nil
 }
+
+func (r *NomadRepo) GetByID(ctx context.Context, id int32) (*domainnomad.Nomad, error) {
+	row, err := r.q.GetNomadByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainnomad.ErrNotFound
+		}
+		return nil, err
+	}
+	return domainnomad.New(row.ID, row.Phone), nil
+}

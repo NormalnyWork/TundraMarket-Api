@@ -265,3 +265,7 @@ func isKnownCategory(category domainorder.OrderCategory) bool {
 		return false
 	}
 }
+
+func (uc *UseCase) GetCurrentOrder(ctx context.Context, nomadID int32) (*domainorder.Order, error) {
+	return uc.repo.GetCurrentByNomadID(ctx, nomadID)
+}

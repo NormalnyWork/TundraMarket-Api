@@ -2,6 +2,7 @@ package apporder
 
 import (
 	commonv1 "tundraMarket/gen/common/v1"
+	nomadv1 "tundraMarket/gen/nomad/v1"
 	orderv1 "tundraMarket/gen/order/v1"
 	domainorder "tundraMarket/internal/domain/order"
 )
@@ -142,5 +143,14 @@ func domainStatusToProto(status domainorder.Status) commonv1.Status {
 		return commonv1.Status_STATUS_DENIED
 	default:
 		return commonv1.Status_STATUS_CREATED
+	}
+}
+
+func ToCurrentOrderProto(o *domainorder.Order) *nomadv1.UserCurrentOrderOut {
+	if o == nil {
+		return &nomadv1.UserCurrentOrderOut{}
+	}
+	return &nomadv1.UserCurrentOrderOut{
+		Order: ToOrderProto(o),
 	}
 }
