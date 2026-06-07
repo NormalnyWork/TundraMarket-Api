@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	nomadv1 "tundraMarket/gen/nomad/v1"
 
 	orderv1 "tundraMarket/gen/order/v1"
 	apporder "tundraMarket/internal/application/order"
@@ -176,4 +177,29 @@ func handleOrderError(w http.ResponseWriter, err error) {
 	default:
 		writeProtoError(w, http.StatusInternalServerError, "internal error")
 	}
+}
+
+func (h *OrderHandler) CurrentOrder(w http.ResponseWriter, r *http.Request) {
+	claims := ClaimsFromContext(r.Context())
+	if claims == nil {
+		writeProtoError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	if claims.NomadID == nil {
+		writeProtoError(w, http.StatusForbidden, "nomad only")
+		return
+	}
+
+	order, err := h.uc.GetCurrentOrder(r.Context(), *claims.NomadID)
+	if err != nil {
+		if errors.Is(err, domainorder.ErrInvalidId) {
+			writeProto(w, http.StatusOK, &nomadv1.UserCurrentOrderOut{})
+			return
+		}
+		log.Printf("current order error: %v", err)
+		writeProtoError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	writeProto(w, http.StatusOK, apporder.ToCurrentOrderProto(order))
 }
