@@ -40,3 +40,14 @@ func readProto(r *http.Request, payload proto.Message) error {
 	}
 	return proto.Unmarshal(b, payload)
 }
+
+func readProtoAllowEmpty(r *http.Request, payload proto.Message) error {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	if len(b) == 0 {
+		return nil
+	}
+	return proto.Unmarshal(b, payload)
+}

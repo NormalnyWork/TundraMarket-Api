@@ -20,9 +20,10 @@ enum OrderCategory {
 }
 
 enum ErrorCode {
-  ERROR_INVALID_ID        = 0;
-  ERROR_DISTANCE_TOO_FAR  = 1;
-  ERROR_EMPTY_CART        = 2;
-  ERROR_UNKNOWN_STATUS    = 3;
-  ERROR_UNKNOWN_CATEGORY  = 4;
+  ERROR_INVALID_ID              = 0;
+  ERROR_DISTANCE_TOO_FAR        = 1;
+  ERROR_EMPTY_CART              = 2;
+  ERROR_UNKNOWN_STATUS          = 3;
+  ERROR_UNKNOWN_CATEGORY        = 4;
+  ERROR_ILLEGAL_STATUS_CHANGE   = 5;
 }

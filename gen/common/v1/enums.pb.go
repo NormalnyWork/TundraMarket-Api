@@ -131,11 +131,12 @@ func (OrderCategory) EnumDescriptor() ([]byte, []int) {
 type ErrorCode int32
 
 const (
-	ErrorCode_ERROR_INVALID_ID       ErrorCode = 0
-	ErrorCode_ERROR_DISTANCE_TOO_FAR ErrorCode = 1
-	ErrorCode_ERROR_EMPTY_CART       ErrorCode = 2
-	ErrorCode_ERROR_UNKNOWN_STATUS   ErrorCode = 3
-	ErrorCode_ERROR_UNKNOWN_CATEGORY ErrorCode = 4
+	ErrorCode_ERROR_INVALID_ID            ErrorCode = 0
+	ErrorCode_ERROR_DISTANCE_TOO_FAR      ErrorCode = 1
+	ErrorCode_ERROR_EMPTY_CART            ErrorCode = 2
+	ErrorCode_ERROR_UNKNOWN_STATUS        ErrorCode = 3
+	ErrorCode_ERROR_UNKNOWN_CATEGORY      ErrorCode = 4
+	ErrorCode_ERROR_ILLEGAL_STATUS_CHANGE ErrorCode = 5
 )
 
 // Enum value maps for ErrorCode.
@@ -146,13 +147,15 @@ var (
 		2: "ERROR_EMPTY_CART",
 		3: "ERROR_UNKNOWN_STATUS",
 		4: "ERROR_UNKNOWN_CATEGORY",
+		5: "ERROR_ILLEGAL_STATUS_CHANGE",
 	}
 	ErrorCode_value = map[string]int32{
-		"ERROR_INVALID_ID":       0,
-		"ERROR_DISTANCE_TOO_FAR": 1,
-		"ERROR_EMPTY_CART":       2,
-		"ERROR_UNKNOWN_STATUS":   3,
-		"ERROR_UNKNOWN_CATEGORY": 4,
+		"ERROR_INVALID_ID":            0,
+		"ERROR_DISTANCE_TOO_FAR":      1,
+		"ERROR_EMPTY_CART":            2,
+		"ERROR_UNKNOWN_STATUS":        3,
+		"ERROR_UNKNOWN_CATEGORY":      4,
+		"ERROR_ILLEGAL_STATUS_CHANGE": 5,
 	}
 )
 
@@ -198,13 +201,14 @@ const file_common_v1_enums_proto_rawDesc = "" +
 	"\rOrderCategory\x12\x16\n" +
 	"\x12ORDER_CATEGORY_NEW\x10\x00\x12\x1d\n" +
 	"\x19ORDER_CATEGORY_PROCESSING\x10\x01\x12\x1a\n" +
-	"\x16ORDER_CATEGORY_HISTORY\x10\x02*\x89\x01\n" +
+	"\x16ORDER_CATEGORY_HISTORY\x10\x02*\xaa\x01\n" +
 	"\tErrorCode\x12\x14\n" +
 	"\x10ERROR_INVALID_ID\x10\x00\x12\x1a\n" +
 	"\x16ERROR_DISTANCE_TOO_FAR\x10\x01\x12\x14\n" +
 	"\x10ERROR_EMPTY_CART\x10\x02\x12\x18\n" +
 	"\x14ERROR_UNKNOWN_STATUS\x10\x03\x12\x1a\n" +
-	"\x16ERROR_UNKNOWN_CATEGORY\x10\x04B%Z#tundraMarket/gen/common/v1;commonv1b\x06proto3"
+	"\x16ERROR_UNKNOWN_CATEGORY\x10\x04\x12\x1f\n" +
+	"\x1bERROR_ILLEGAL_STATUS_CHANGE\x10\x05B%Z#tundraMarket/gen/common/v1;commonv1b\x06proto3"
 
 var (
 	file_common_v1_enums_proto_rawDescOnce sync.Once
