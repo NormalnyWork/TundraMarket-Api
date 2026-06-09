@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	domainauth "tundraMarket/internal/domain/auth"
+	domainnomad "tundraMarket/internal/domain/nomad"
 	domainorder "tundraMarket/internal/domain/order"
 	domainproduct "tundraMarket/internal/domain/product"
 	domainstation "tundraMarket/internal/domain/trading_station"
@@ -21,6 +23,15 @@ type CreateInput struct {
 	Products         []ProductCountInput
 	Longitude        float32
 	Latitude         float32
+}
+
+type CreateForNomadInput struct {
+	Actor      Actor
+	NomadPhone string
+	Comment    string
+	Products   []ProductCountInput
+	Longitude  float32
+	Latitude   float32
 }
 
 type ProductCountInput struct {
@@ -55,6 +66,7 @@ type UpdatesInput struct {
 
 type UseCase struct {
 	repo               domainorder.OrderRepository
+	nomadRepo          domainnomad.Repository
 	tradingStationRepo domainstation.TradingStationRepository
 	productRepo        domainproduct.Repository
 }
@@ -69,9 +81,10 @@ type CheckStatusOutput struct {
 	History []domainorder.StatusHistory
 }
 
-func NewUseCase(repo domainorder.OrderRepository, tradingStationRepo domainstation.TradingStationRepository, productRepo domainproduct.Repository) *UseCase {
+func NewUseCase(repo domainorder.OrderRepository, nomadRepo domainnomad.Repository, tradingStationRepo domainstation.TradingStationRepository, productRepo domainproduct.Repository) *UseCase {
 	return &UseCase{
 		repo:               repo,
+		nomadRepo:          nomadRepo,
 		tradingStationRepo: tradingStationRepo,
 		productRepo:        productRepo,
 	}
@@ -128,6 +141,34 @@ func (uc *UseCase) Create(ctx context.Context, in CreateInput) (*domainorder.Ord
 	}
 
 	return uc.repo.Save(ctx, o)
+}
+
+func (uc *UseCase) CreateForNomad(ctx context.Context, in CreateForNomadInput) (*domainorder.Order, error) {
+	if in.Actor.Role != domainauth.RoleTradingStation || in.Actor.TradingStationID == nil {
+		return nil, domainorder.ErrForbidden
+	}
+
+	phone := strings.TrimSpace(in.NomadPhone)
+	if phone == "" {
+		return nil, domainorder.ErrInvalidPhone
+	}
+
+	nomad, err := uc.nomadRepo.GetByPhone(ctx, phone)
+	if err != nil {
+		if errors.Is(err, domainnomad.ErrNotFound) {
+			return nil, domainorder.ErrNomadNotFound
+		}
+		return nil, err
+	}
+
+	return uc.Create(ctx, CreateInput{
+		NomadID:          nomad.ID(),
+		TradingStationID: *in.Actor.TradingStationID,
+		Comment:          in.Comment,
+		Products:         in.Products,
+		Longitude:        in.Longitude,
+		Latitude:         in.Latitude,
+	})
 }
 
 func distanceKm(lat1, lon1, lat2, lon2 float32) float64 {

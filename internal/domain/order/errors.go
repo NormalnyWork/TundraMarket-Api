@@ -10,4 +10,6 @@ var (
 	ErrUnknownCategory     = errors.New("UNKNOWN_CATEGORY")
 	ErrIllegalStatusChange = errors.New("ILLEGAL_STATUS_CHANGE")
 	ErrForbidden           = errors.New("FORBIDDEN")
+	ErrInvalidPhone        = errors.New("INVALID_PHONE")
+	ErrNomadNotFound       = errors.New("NOMAD_NOT_FOUND")
 )

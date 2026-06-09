@@ -40,6 +40,7 @@ func NewRouter(deps Dependencies) http.Handler {
 			r.Get("/user/current-order", deps.OrderHandler.CurrentOrder)
 			r.Post("/order/check-status", deps.OrderHandler.CheckStatus)
 			r.Post("/order/create", deps.OrderHandler.Create)
+			r.Post("/order/create-for-nomad", deps.OrderHandler.CreateForNomad)
 			r.Post("/order/change-status", deps.OrderHandler.ChangeStatus)
 			r.Post("/order/list", deps.OrderHandler.List)
 			r.Post("/order/updates", deps.OrderHandler.Updates)

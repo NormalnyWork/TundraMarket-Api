@@ -49,6 +49,32 @@ func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 	writeProto(w, http.StatusCreated, apporder.ToCreateProto(order))
 }
 
+func (h *OrderHandler) CreateForNomad(w http.ResponseWriter, r *http.Request) {
+	actor, ok := orderActorFromRequest(r)
+	if !ok {
+		writeProtoError(w, http.StatusUnauthorized, "UNAUTHORIZED")
+		return
+	}
+
+	var req orderv1.OrderCreateForNomadIn
+	if err := readProto(r, &req); err != nil {
+		writeProtoError(w, http.StatusBadRequest, "INVALID_REQUEST_BODY")
+		return
+	}
+
+	input := apporder.FromCreateForNomadProto(&req)
+	input.Actor = actor
+
+	order, err := h.uc.CreateForNomad(r.Context(), input)
+	if err != nil {
+		log.Printf("order create for nomad error: %v", err)
+		handleOrderError(w, err)
+		return
+	}
+
+	writeProto(w, http.StatusCreated, apporder.ToCreateProto(order))
+}
+
 func (h *OrderHandler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
 	actor, ok := orderActorFromRequest(r)
 	if !ok {
@@ -174,6 +200,10 @@ func handleOrderError(w http.ResponseWriter, err error) {
 		writeProtoError(w, http.StatusBadRequest, "UNKNOWN_CATEGORY")
 	case errors.Is(err, domainorder.ErrForbidden):
 		writeProtoError(w, http.StatusForbidden, "FORBIDDEN")
+	case errors.Is(err, domainorder.ErrInvalidPhone):
+		writeProtoError(w, http.StatusBadRequest, "INVALID_PHONE")
+	case errors.Is(err, domainorder.ErrNomadNotFound):
+		writeProtoError(w, http.StatusNotFound, "NOMAD_NOT_FOUND")
 	default:
 		writeProtoError(w, http.StatusInternalServerError, "internal error")
 	}

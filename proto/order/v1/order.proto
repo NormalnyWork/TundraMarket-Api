@@ -23,6 +23,13 @@ message OrderCreateOut {
   int32 order_id = 1;
 }
 
+message OrderCreateForNomadIn {
+  string                      nomad_phone = 1;
+  repeated common.v1.Location location = 2;
+  repeated common.v1.ProductCount products = 3;
+  optional string             comment = 4;
+}
+
 message OrderCheckStatusIn {
   int64  time = 1; // unix seconds
 }
