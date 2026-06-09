@@ -67,7 +67,7 @@ func run(ctx context.Context) error {
 	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, tokenIssuer)
 	productUC := appproduct.NewUseCase(productRepo)
 	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
-	orderUC := apporder.NewUseCase(orderRepo, tradingStationRepo, productRepo)
+	orderUC := apporder.NewUseCase(orderRepo, nomadRepo, tradingStationRepo, productRepo)
 
 	authHandler := httptransport.NewAuthHandler(authUC)
 	productHandler := httptransport.NewProductHandler(productUC)
