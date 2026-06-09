@@ -89,9 +89,8 @@ func (r *OrderRepo) ChangeStatus(ctx context.Context, id int32, status domainord
 	qtx := r.q.WithTx(tx)
 
 	row, err := qtx.UpdateOrderStatus(ctx, sqlcdb.UpdateOrderStatusParams{
-		ID:      id,
-		Status:  statusToSQLC(status),
-		Comment: textFromPointer(comment),
+		ID:     id,
+		Status: statusToSQLC(status),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -103,6 +102,7 @@ func (r *OrderRepo) ChangeStatus(ctx context.Context, id int32, status domainord
 	if err = qtx.AddStatusHistory(ctx, sqlcdb.AddStatusHistoryParams{
 		OrdersID: row.ID,
 		Status:   statusToNullStatus(status),
+		Comment:  textFromPointer(comment),
 	}); err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func (r *OrderRepo) rowToDomain(ctx context.Context, row sqlcdb.Order) (*domaino
 
 	history := make([]domainorder.StatusHistory, len(historyRows))
 	for i, item := range historyRows {
-		history[i] = domainorder.NewStatusHistory(domainorder.Status(item.Status.Status), item.CreatedAt.Time)
+		history[i] = domainorder.NewStatusHistory(domainorder.Status(item.Status.Status), item.CreatedAt.Time, textToPointer(item.Comment))
 	}
 
 	return domainorder.Restore(
@@ -237,6 +237,14 @@ func textFromPointer(value *string) pgtype.Text {
 		String: *value,
 		Valid:  true,
 	}
+}
+
+func textToPointer(value pgtype.Text) *string {
+	if !value.Valid {
+		return nil
+	}
+
+	return &value.String
 }
 
 func (r *OrderRepo) GetCurrentByNomadID(ctx context.Context, nomadID int32) (*domainorder.Order, error) {

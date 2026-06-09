@@ -285,20 +285,18 @@ func (q *Queries) GetOrdersByStationUpdatedAfter(ctx context.Context, arg GetOrd
 
 const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE orders
-SET status = $2,
-    comment = COALESCE($3, comment)
+SET status = $2
 WHERE id = $1
     RETURNING id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at
 `
 
 type UpdateOrderStatusParams struct {
-	ID      int32
-	Status  Status
-	Comment pgtype.Text
+	ID     int32
+	Status Status
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
-	row := q.db.QueryRow(ctx, updateOrderStatus, arg.ID, arg.Status, arg.Comment)
+	row := q.db.QueryRow(ctx, updateOrderStatus, arg.ID, arg.Status)
 	var i Order
 	err := row.Scan(
 		&i.ID,

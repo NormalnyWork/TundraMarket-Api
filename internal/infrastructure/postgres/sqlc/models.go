@@ -99,6 +99,7 @@ type StatusHistory struct {
 	ID        int32
 	OrdersID  int32
 	Status    NullStatus
+	Comment   pgtype.Text
 	CreatedAt pgtype.Timestamp
 }
 
