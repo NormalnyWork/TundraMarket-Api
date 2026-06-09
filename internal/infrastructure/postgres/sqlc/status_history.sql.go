@@ -7,25 +7,28 @@ package sqlcdb
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addStatusHistory = `-- name: AddStatusHistory :exec
-INSERT INTO status_history (orders_id, status)
-VALUES ($1, $2)
+INSERT INTO status_history (orders_id, status, comment)
+VALUES ($1, $2, $3)
 `
 
 type AddStatusHistoryParams struct {
 	OrdersID int32
 	Status   NullStatus
+	Comment  pgtype.Text
 }
 
 func (q *Queries) AddStatusHistory(ctx context.Context, arg AddStatusHistoryParams) error {
-	_, err := q.db.Exec(ctx, addStatusHistory, arg.OrdersID, arg.Status)
+	_, err := q.db.Exec(ctx, addStatusHistory, arg.OrdersID, arg.Status, arg.Comment)
 	return err
 }
 
 const getStatusHistoryAfter = `-- name: GetStatusHistoryAfter :many
-SELECT id, orders_id, status, created_at FROM status_history
+SELECT id, orders_id, status, comment, created_at FROM status_history
 WHERE orders_id = $1
   AND created_at > to_timestamp($2)
 ORDER BY created_at ASC
@@ -49,6 +52,7 @@ func (q *Queries) GetStatusHistoryAfter(ctx context.Context, arg GetStatusHistor
 			&i.ID,
 			&i.OrdersID,
 			&i.Status,
+			&i.Comment,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -62,7 +66,7 @@ func (q *Queries) GetStatusHistoryAfter(ctx context.Context, arg GetStatusHistor
 }
 
 const getStatusHistoryByOrderID = `-- name: GetStatusHistoryByOrderID :many
-SELECT id, orders_id, status, created_at FROM status_history
+SELECT id, orders_id, status, comment, created_at FROM status_history
 WHERE orders_id = $1
 ORDER BY created_at ASC
 `
@@ -80,6 +84,7 @@ func (q *Queries) GetStatusHistoryByOrderID(ctx context.Context, ordersID int32)
 			&i.ID,
 			&i.OrdersID,
 			&i.Status,
+			&i.Comment,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

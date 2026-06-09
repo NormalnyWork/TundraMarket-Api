@@ -16,8 +16,7 @@ ORDER BY created_at DESC
 
 -- name: UpdateOrderStatus :one
 UPDATE orders
-SET status = $2,
-    comment = COALESCE($3, comment)
+SET status = $2
 WHERE id = $1
     RETURNING *;
 

@@ -77,6 +77,7 @@ type StatusHistory struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        Status                 `protobuf:"varint,1,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
 	Time          int64                  `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"` // unix seconds
+	Comment       *string                `protobuf:"bytes,3,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -123,6 +124,13 @@ func (x *StatusHistory) GetTime() int64 {
 		return x.Time
 	}
 	return 0
+}
+
+func (x *StatusHistory) GetComment() string {
+	if x != nil && x.Comment != nil {
+		return *x.Comment
+	}
+	return ""
 }
 
 type ProductCount struct {
@@ -428,10 +436,13 @@ const file_common_v1_entities_proto_rawDesc = "" +
 	"\x18common/v1/entities.proto\x12\tcommon.v1\x1a\x15common/v1/enums.proto\"D\n" +
 	"\bLocation\x12\x1c\n" +
 	"\tlongitude\x18\x01 \x01(\x02R\tlongitude\x12\x1a\n" +
-	"\blatitude\x18\x02 \x01(\x02R\blatitude\"N\n" +
+	"\blatitude\x18\x02 \x01(\x02R\blatitude\"y\n" +
 	"\rStatusHistory\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x12\n" +
-	"\x04time\x18\x02 \x01(\x03R\x04time\"4\n" +
+	"\x04time\x18\x02 \x01(\x03R\x04time\x12\x1d\n" +
+	"\acomment\x18\x03 \x01(\tH\x00R\acomment\x88\x01\x01B\n" +
+	"\n" +
+	"\b_comment\"4\n" +
 	"\fProductCount\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\"\x88\x01\n" +
@@ -501,6 +512,7 @@ func file_common_v1_entities_proto_init() {
 		return
 	}
 	file_common_v1_enums_proto_init()
+	file_common_v1_entities_proto_msgTypes[1].OneofWrappers = []any{}
 	file_common_v1_entities_proto_msgTypes[3].OneofWrappers = []any{}
 	file_common_v1_entities_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}

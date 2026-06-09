@@ -172,7 +172,12 @@ func (uc *UseCase) ChangeStatus(ctx context.Context, in ChangeStatusInput) (int6
 		return 0, domainorder.ErrIllegalStatusChange
 	}
 
-	if _, err := uc.repo.ChangeStatus(ctx, in.OrderID, in.NewStatus, in.Comment); err != nil {
+	var statusComment *string
+	if in.NewStatus == domainorder.StatusDenied {
+		statusComment = in.Comment
+	}
+
+	if _, err := uc.repo.ChangeStatus(ctx, in.OrderID, in.NewStatus, statusComment); err != nil {
 		return 0, err
 	}
 

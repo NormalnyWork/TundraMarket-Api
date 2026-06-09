@@ -29,6 +29,7 @@ type ProductCount struct {
 type StatusHistory struct {
 	status    Status
 	createdAt time.Time
+	comment   *string
 }
 
 type Order struct {
@@ -59,10 +60,11 @@ func New(nomadID, tradingStationID int32, comment string, longitude, latitude fl
 	}, nil
 }
 
-func NewStatusHistory(status Status, createdAt time.Time) StatusHistory {
+func NewStatusHistory(status Status, createdAt time.Time, comment *string) StatusHistory {
 	return StatusHistory{
 		status:    status,
 		createdAt: createdAt,
+		comment:   comment,
 	}
 }
 
@@ -94,3 +96,4 @@ func (o *Order) CreatedAt() time.Time     { return o.createdAt }
 
 func (h StatusHistory) Status() Status       { return h.status }
 func (h StatusHistory) CreatedAt() time.Time { return h.createdAt }
+func (h StatusHistory) Comment() *string     { return h.comment }

@@ -101,8 +101,9 @@ func ToOrderProto(order *domainorder.Order) *commonv1.Order {
 	history := make([]*commonv1.StatusHistory, len(order.History()))
 	for i, item := range order.History() {
 		history[i] = &commonv1.StatusHistory{
-			Status: domainStatusToProto(item.Status()),
-			Time:   item.CreatedAt().Unix(),
+			Status:  domainStatusToProto(item.Status()),
+			Time:    item.CreatedAt().Unix(),
+			Comment: item.Comment(),
 		}
 	}
 
@@ -159,8 +160,9 @@ func ToCheckStatusProto(out *CheckStatusOutput) *orderv1.OrderCheckStatusOut {
 	history := make([]*commonv1.StatusHistory, len(out.History))
 	for i, h := range out.History {
 		history[i] = &commonv1.StatusHistory{
-			Status: domainStatusToProto(h.Status()),
-			Time:   h.CreatedAt().Unix(),
+			Status:  domainStatusToProto(h.Status()),
+			Time:    h.CreatedAt().Unix(),
+			Comment: h.Comment(),
 		}
 	}
 	return &orderv1.OrderCheckStatusOut{
