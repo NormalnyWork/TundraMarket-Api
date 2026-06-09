@@ -26,4 +26,6 @@ enum ErrorCode {
   ERROR_UNKNOWN_STATUS          = 3;
   ERROR_UNKNOWN_CATEGORY        = 4;
   ERROR_ILLEGAL_STATUS_CHANGE   = 5;
+  ERROR_INVALID_PHONE           = 6;
+  ERROR_NOMAD_NOT_FOUND         = 7;
 }
