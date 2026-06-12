@@ -39,15 +39,23 @@ type GetStatusHistoryAfterParams struct {
 	ToTimestamp float64
 }
 
-func (q *Queries) GetStatusHistoryAfter(ctx context.Context, arg GetStatusHistoryAfterParams) ([]StatusHistory, error) {
+type GetStatusHistoryAfterRow struct {
+	ID        int32
+	OrdersID  int32
+	Status    NullStatus
+	Comment   pgtype.Text
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetStatusHistoryAfter(ctx context.Context, arg GetStatusHistoryAfterParams) ([]GetStatusHistoryAfterRow, error) {
 	rows, err := q.db.Query(ctx, getStatusHistoryAfter, arg.OrdersID, arg.ToTimestamp)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []StatusHistory
+	var items []GetStatusHistoryAfterRow
 	for rows.Next() {
-		var i StatusHistory
+		var i GetStatusHistoryAfterRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrdersID,
@@ -71,15 +79,23 @@ WHERE orders_id = $1
 ORDER BY created_at ASC
 `
 
-func (q *Queries) GetStatusHistoryByOrderID(ctx context.Context, ordersID int32) ([]StatusHistory, error) {
+type GetStatusHistoryByOrderIDRow struct {
+	ID        int32
+	OrdersID  int32
+	Status    NullStatus
+	Comment   pgtype.Text
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetStatusHistoryByOrderID(ctx context.Context, ordersID int32) ([]GetStatusHistoryByOrderIDRow, error) {
 	rows, err := q.db.Query(ctx, getStatusHistoryByOrderID, ordersID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []StatusHistory
+	var items []GetStatusHistoryByOrderIDRow
 	for rows.Next() {
-		var i StatusHistory
+		var i GetStatusHistoryByOrderIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrdersID,

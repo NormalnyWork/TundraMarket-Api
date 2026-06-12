@@ -345,3 +345,12 @@ func (uc *UseCase) CheckStatus(ctx context.Context, in CheckStatusInput) (*Check
 		History: filtered,
 	}, nil
 }
+
+type ListAllInput struct {
+	Anchor   int32
+	PageSize int32
+}
+
+func (uc *UseCase) ListAll(ctx context.Context, in ListAllInput) ([]*domainorder.Order, error) {
+	return uc.repo.ListAll(ctx, in.Anchor, in.PageSize)
+}

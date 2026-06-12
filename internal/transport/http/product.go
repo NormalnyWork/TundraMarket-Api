@@ -21,5 +21,5 @@ func (h *ProductHandler) Catalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeProto(w, http.StatusOK, appproduct.ToProtoCatalog(products))
+	writeAuto(w, r, http.StatusOK, appproduct.ToProtoCatalog(products))
 }

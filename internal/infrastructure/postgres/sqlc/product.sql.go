@@ -7,21 +7,33 @@ package sqlcdb
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getAllProducts = `-- name: GetAllProducts :many
 SELECT id, name, details, price, weight, volume, created_at FROM product ORDER BY id
 `
 
-func (q *Queries) GetAllProducts(ctx context.Context) ([]Product, error) {
+type GetAllProductsRow struct {
+	ID        int32
+	Name      string
+	Details   pgtype.Text
+	Price     pgtype.Int4
+	Weight    pgtype.Int4
+	Volume    pgtype.Int4
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetAllProducts(ctx context.Context) ([]GetAllProductsRow, error) {
 	rows, err := q.db.Query(ctx, getAllProducts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []GetAllProductsRow
 	for rows.Next() {
-		var i Product
+		var i GetAllProductsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -45,9 +57,19 @@ const getProductByID = `-- name: GetProductByID :one
 SELECT id, name, details, price, weight, volume, created_at FROM product WHERE id = $1
 `
 
-func (q *Queries) GetProductByID(ctx context.Context, id int32) (Product, error) {
+type GetProductByIDRow struct {
+	ID        int32
+	Name      string
+	Details   pgtype.Text
+	Price     pgtype.Int4
+	Weight    pgtype.Int4
+	Volume    pgtype.Int4
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetProductByID(ctx context.Context, id int32) (GetProductByIDRow, error) {
 	row := q.db.QueryRow(ctx, getProductByID, id)
-	var i Product
+	var i GetProductByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -64,15 +86,25 @@ const getProductsByIDs = `-- name: GetProductsByIDs :many
 SELECT id, name, details, price, weight, volume, created_at FROM product WHERE id = ANY($1::int[])
 `
 
-func (q *Queries) GetProductsByIDs(ctx context.Context, dollar_1 []int32) ([]Product, error) {
+type GetProductsByIDsRow struct {
+	ID        int32
+	Name      string
+	Details   pgtype.Text
+	Price     pgtype.Int4
+	Weight    pgtype.Int4
+	Volume    pgtype.Int4
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetProductsByIDs(ctx context.Context, dollar_1 []int32) ([]GetProductsByIDsRow, error) {
 	rows, err := q.db.Query(ctx, getProductsByIDs, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []GetProductsByIDsRow
 	for rows.Next() {
-		var i Product
+		var i GetProductsByIDsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

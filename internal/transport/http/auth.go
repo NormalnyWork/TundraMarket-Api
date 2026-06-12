@@ -1,6 +1,7 @@
 package httptransport
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -40,4 +41,23 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeProto(w, http.StatusOK, &authv1.UserAuthOut{Token: token})
+}
+
+func (h *AuthHandler) AdminAuth(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeProtoError(w, http.StatusBadRequest, "INVALID_REQUEST_BODY")
+		return
+	}
+
+	token, err := h.uc.AuthAdmin(r.Context(), req.Login, req.Password)
+	if err != nil {
+		writeProtoError(w, http.StatusUnauthorized, "UNAUTHORIZED")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"token": token})
 }

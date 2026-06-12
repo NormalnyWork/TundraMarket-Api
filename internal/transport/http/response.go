@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -50,4 +51,15 @@ func readProtoAllowEmpty(r *http.Request, payload proto.Message) error {
 		return nil
 	}
 	return proto.Unmarshal(b, payload)
+}
+
+func writeAuto(w http.ResponseWriter, r *http.Request, status int, payload proto.Message) {
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		b, _ := protojson.Marshal(payload)
+		w.Write(b)
+		return
+	}
+	writeProto(w, status, payload)
 }

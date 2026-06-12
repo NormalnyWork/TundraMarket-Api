@@ -43,3 +43,14 @@ func ClaimsFromContext(ctx context.Context) *domainauth.TokenClaims {
 	claims, _ := ctx.Value(claimsKey).(*domainauth.TokenClaims)
 	return claims
 }
+
+func RequireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		claims := ClaimsFromContext(r.Context())
+		if claims == nil || claims.Role != domainauth.RoleAdmin {
+			writeProtoError(w, http.StatusForbidden, "ADMIN_ONLY")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

@@ -20,6 +20,5 @@ func (h *TradingStationHandler) List(w http.ResponseWriter, r *http.Request) {
 		writeProtoError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	writeProto(w, http.StatusOK, appstation.ToProtoList(stations))
+	writeAuto(w, r, http.StatusOK, appstation.ToProtoList(stations))
 }

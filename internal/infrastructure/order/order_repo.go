@@ -258,3 +258,14 @@ func (r *OrderRepo) GetCurrentByNomadID(ctx context.Context, nomadID int32) (*do
 
 	return r.rowToDomain(ctx, row)
 }
+
+func (r *OrderRepo) ListAll(ctx context.Context, anchor, pageSize int32) ([]*domainorder.Order, error) {
+	rows, err := r.q.GetAllOrders(ctx, sqlcdb.GetAllOrdersParams{
+		Limit:  pageSize,
+		Offset: anchor,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return r.rowsToDomain(ctx, rows)
+}

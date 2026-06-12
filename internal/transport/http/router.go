@@ -32,6 +32,7 @@ func NewRouter(deps Dependencies) http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/user/auth", deps.AuthHandler.Auth)
+		r.Post("/admin/auth", deps.AuthHandler.AdminAuth)
 		r.Get("/user/catalog", deps.ProductHandler.Catalog)
 		r.Get("/trading-stations/list", deps.TradingStationHandler.List)
 
@@ -45,8 +46,15 @@ func NewRouter(deps Dependencies) http.Handler {
 			r.Post("/order/list", deps.OrderHandler.List)
 			r.Post("/order/updates", deps.OrderHandler.Updates)
 		})
-	})
 
+		r.Group(func(r chi.Router) {
+			r.Use(JWTMiddleware(deps.TokenIssuer))
+			r.Use(RequireAdmin)
+			r.Get("/admin/orders", deps.OrderHandler.AdminList)
+			r.Get("/admin/trading-stations", deps.TradingStationHandler.List)
+			r.Get("/admin/catalog", deps.ProductHandler.Catalog)
+		})
+	})
 	return r
 }
 

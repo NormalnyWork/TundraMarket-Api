@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	domainadmin "tundraMarket/internal/domain/admin"
 	domainauth "tundraMarket/internal/domain/auth"
 	"tundraMarket/internal/domain/nomad"
 	tradingstation "tundraMarket/internal/domain/trading_station"
@@ -23,17 +24,20 @@ type Input struct {
 type UseCase struct {
 	nomads   nomad.Repository
 	stations tradingstation.TradingStationRepository
+	admins   domainadmin.AdminRepository
 	tokens   domainauth.TokenIssuer
 }
 
 func NewUseCase(
 	nomads nomad.Repository,
 	stations tradingstation.TradingStationRepository,
+	admins domainadmin.AdminRepository,
 	tokens domainauth.TokenIssuer,
 ) *UseCase {
 	return &UseCase{
 		nomads:   nomads,
 		stations: stations,
+		admins:   admins,
 		tokens:   tokens,
 	}
 }
@@ -96,5 +100,19 @@ func (uc *UseCase) authTradingStation(ctx context.Context, phone string, station
 		Role:             domainauth.RoleTradingStation,
 		Phone:            phone,
 		TradingStationID: &stationID,
+	})
+}
+
+func (uc *UseCase) AuthAdmin(ctx context.Context, login, password string) (string, error) {
+	admin, err := uc.admins.GetByLogin(ctx, login)
+	if err != nil {
+		return "", ErrUnauthorized
+	}
+	if admin.Password() != password {
+		return "", ErrUnauthorized
+	}
+	return uc.tokens.Issue(domainauth.TokenClaims{
+		Role:  domainauth.RoleAdmin,
+		Phone: login,
 	})
 }

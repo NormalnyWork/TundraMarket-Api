@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	nomadv1 "tundraMarket/gen/nomad/v1"
 
 	orderv1 "tundraMarket/gen/order/v1"
@@ -143,7 +144,7 @@ func (h *OrderHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeProto(w, http.StatusOK, apporder.ToListProto(orders))
+	writeAuto(w, r, http.StatusOK, apporder.ToListProto(orders))
 }
 
 func (h *OrderHandler) Updates(w http.ResponseWriter, r *http.Request) {
@@ -261,4 +262,38 @@ func (h *OrderHandler) CheckStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeProto(w, http.StatusOK, apporder.ToCheckStatusProto(out))
+}
+
+func (h *OrderHandler) AdminList(w http.ResponseWriter, r *http.Request) {
+	anchor := int32(0)
+	pageSize := int32(50)
+
+	if v := r.URL.Query().Get("anchor"); v != "" {
+		n, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			writeProtoError(w, http.StatusBadRequest, "INVALID_ANCHOR")
+			return
+		}
+		anchor = int32(n)
+	}
+
+	if v := r.URL.Query().Get("page_size"); v != "" {
+		n, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			writeProtoError(w, http.StatusBadRequest, "INVALID_PAGE_SIZE")
+			return
+		}
+		pageSize = int32(n)
+	}
+
+	orders, err := h.uc.ListAll(r.Context(), apporder.ListAllInput{
+		Anchor:   anchor,
+		PageSize: pageSize,
+	})
+	if err != nil {
+		handleOrderError(w, err)
+		return
+	}
+
+	writeAuto(w, r, http.StatusOK, apporder.ToListProto(orders))
 }

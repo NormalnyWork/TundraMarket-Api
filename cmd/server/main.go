@@ -17,6 +17,7 @@ import (
 	apporder "tundraMarket/internal/application/order"
 	appproduct "tundraMarket/internal/application/product"
 	appstation "tundraMarket/internal/application/trading_station"
+	admininfrastructure "tundraMarket/internal/infrastructure/admin"
 	authinfrastructure "tundraMarket/internal/infrastructure/auth"
 	nomadinfrastructure "tundraMarket/internal/infrastructure/nomad"
 	orderinfrastructure "tundraMarket/internal/infrastructure/order"
@@ -61,10 +62,11 @@ func run(ctx context.Context) error {
 	productRepo := productinfrastructure.NewProductRepo(queries)
 	tradingStationRepo := stationinfrastructure.NewTradingStationRepo(queries)
 	orderRepo := orderinfrastructure.NewOrderRepo(pool, queries)
+	adminRepo := admininfrastructure.NewAdminRepo(queries)
 
 	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
 
-	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, tokenIssuer)
+	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, adminRepo, tokenIssuer)
 	productUC := appproduct.NewUseCase(productRepo)
 	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
 	orderUC := apporder.NewUseCase(orderRepo, nomadRepo, tradingStationRepo, productRepo)
