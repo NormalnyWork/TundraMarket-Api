@@ -57,6 +57,13 @@ func (ns NullStatus) Value() (driver.Value, error) {
 	return string(ns.Status), nil
 }
 
+type Admin struct {
+	ID        int32
+	Login     string
+	Password  string
+	CreatedAt pgtype.Timestamp
+}
+
 type Nomad struct {
 	ID        int32
 	Phone     string
@@ -88,19 +95,19 @@ type OrdersToProduct struct {
 type Product struct {
 	ID        int32
 	Name      string
-	Details   pgtype.Text
 	Price     pgtype.Int4
 	Weight    pgtype.Int4
 	Volume    pgtype.Int4
 	CreatedAt pgtype.Timestamp
+	Details   pgtype.Text
 }
 
 type StatusHistory struct {
 	ID        int32
 	OrdersID  int32
 	Status    NullStatus
-	Comment   pgtype.Text
 	CreatedAt pgtype.Timestamp
+	Comment   pgtype.Text
 }
 
 type TradingStation struct {

@@ -7,6 +7,7 @@ type OrderRepository interface {
 	GetByID(ctx context.Context, id int32) (*Order, error)
 	GetCurrentByNomadID(ctx context.Context, nomadID int32) (*Order, error)
 	ChangeStatus(ctx context.Context, id int32, status Status, comment *string) (*Order, error)
+	ListAll(ctx context.Context, anchor, pageSize int32) ([]*Order, error)
 	ListByNomad(ctx context.Context, nomadID int32, category OrderCategory, anchor, pageSize int32) ([]*Order, error)
 	ListByTradingStation(ctx context.Context, tradingStationID int32, category OrderCategory, anchor, pageSize int32) ([]*Order, error)
 	GetUpdatesByNomad(ctx context.Context, nomadID int32, afterUnix int64) ([]*Order, error)

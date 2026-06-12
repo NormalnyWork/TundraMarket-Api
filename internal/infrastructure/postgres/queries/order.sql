@@ -58,3 +58,9 @@ LEFT JOIN status_history sh ON sh.orders_id = o.id
 WHERE o.trading_station_id = $1
   AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
 ORDER BY o.created_at DESC;
+
+-- name: GetAllOrders :many
+SELECT * FROM orders
+ORDER BY created_at DESC
+    LIMIT $1
+OFFSET $2;

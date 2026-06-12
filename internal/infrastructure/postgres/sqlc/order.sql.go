@@ -47,6 +47,47 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	return i, err
 }
 
+const getAllOrders = `-- name: GetAllOrders :many
+SELECT id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at FROM orders
+ORDER BY created_at DESC
+    LIMIT $1
+OFFSET $2
+`
+
+type GetAllOrdersParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllOrders(ctx context.Context, arg GetAllOrdersParams) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getAllOrders, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.NomadID,
+			&i.TradingStationID,
+			&i.Status,
+			&i.Longitude,
+			&i.Latitude,
+			&i.Comment,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCurrentOrderByNomadID = `-- name: GetCurrentOrderByNomadID :one
 SELECT id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at FROM orders
 WHERE nomad_id = $1
@@ -145,33 +186,21 @@ func (q *Queries) GetOrdersByNomadIDAndCategory(ctx context.Context, arg GetOrde
 	return items, nil
 }
 
-const getOrdersByStationAndCategory = `-- name: GetOrdersByStationAndCategory :many
-SELECT id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at FROM orders
-WHERE trading_station_id = $1
-  AND CASE $3::text
-    WHEN 'NEW'        THEN status = 'CREATED'
-    WHEN 'PROCESSING' THEN status IN ('PROCESSING', 'SENT')
-    WHEN 'HISTORY'    THEN status IN ('COMPLETED', 'CANCELLED', 'DENIED')
-END
-ORDER BY created_at DESC
-LIMIT  $2
-OFFSET COALESCE($4::int, 0)
+const getOrdersByNomadIDUpdatedAfter = `-- name: GetOrdersByNomadIDUpdatedAfter :many
+SELECT DISTINCT o.id, o.nomad_id, o.trading_station_id, o.status, o.longitude, o.latitude, o.comment, o.created_at FROM orders o
+LEFT JOIN status_history sh ON sh.orders_id = o.id
+WHERE o.nomad_id = $1
+  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
+ORDER BY o.created_at DESC
 `
 
-type GetOrdersByStationAndCategoryParams struct {
-	TradingStationID pgtype.Int4
-	Limit            int32
-	OrderCategory    string
-	Anchor           int32
+type GetOrdersByNomadIDUpdatedAfterParams struct {
+	NomadID     pgtype.Int4
+	ToTimestamp float64
 }
 
-func (q *Queries) GetOrdersByStationAndCategory(ctx context.Context, arg GetOrdersByStationAndCategoryParams) ([]Order, error) {
-	rows, err := q.db.Query(ctx, getOrdersByStationAndCategory,
-		arg.TradingStationID,
-		arg.Limit,
-		arg.OrderCategory,
-		arg.Anchor,
-	)
+func (q *Queries) GetOrdersByNomadIDUpdatedAfter(ctx context.Context, arg GetOrdersByNomadIDUpdatedAfterParams) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByNomadIDUpdatedAfter, arg.NomadID, arg.ToTimestamp)
 	if err != nil {
 		return nil, err
 	}
@@ -199,21 +228,33 @@ func (q *Queries) GetOrdersByStationAndCategory(ctx context.Context, arg GetOrde
 	return items, nil
 }
 
-const getOrdersByNomadIDUpdatedAfter = `-- name: GetOrdersByNomadIDUpdatedAfter :many
-SELECT DISTINCT o.id, o.nomad_id, o.trading_station_id, o.status, o.longitude, o.latitude, o.comment, o.created_at FROM orders o
-LEFT JOIN status_history sh ON sh.orders_id = o.id
-WHERE o.nomad_id = $1
-  AND (o.created_at > to_timestamp($2) OR sh.created_at > to_timestamp($2))
-ORDER BY o.created_at DESC
+const getOrdersByStationAndCategory = `-- name: GetOrdersByStationAndCategory :many
+SELECT id, nomad_id, trading_station_id, status, longitude, latitude, comment, created_at FROM orders
+WHERE trading_station_id = $1
+  AND CASE $3::text
+    WHEN 'NEW'        THEN status = 'CREATED'
+    WHEN 'PROCESSING' THEN status IN ('PROCESSING', 'SENT')
+    WHEN 'HISTORY'    THEN status IN ('COMPLETED', 'CANCELLED', 'DENIED')
+END
+ORDER BY created_at DESC
+LIMIT  $2
+OFFSET COALESCE($4::int, 0)
 `
 
-type GetOrdersByNomadIDUpdatedAfterParams struct {
-	NomadID     pgtype.Int4
-	ToTimestamp float64
+type GetOrdersByStationAndCategoryParams struct {
+	TradingStationID pgtype.Int4
+	Limit            int32
+	OrderCategory    string
+	Anchor           int32
 }
 
-func (q *Queries) GetOrdersByNomadIDUpdatedAfter(ctx context.Context, arg GetOrdersByNomadIDUpdatedAfterParams) ([]Order, error) {
-	rows, err := q.db.Query(ctx, getOrdersByNomadIDUpdatedAfter, arg.NomadID, arg.ToTimestamp)
+func (q *Queries) GetOrdersByStationAndCategory(ctx context.Context, arg GetOrdersByStationAndCategoryParams) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByStationAndCategory,
+		arg.TradingStationID,
+		arg.Limit,
+		arg.OrderCategory,
+		arg.Anchor,
+	)
 	if err != nil {
 		return nil, err
 	}

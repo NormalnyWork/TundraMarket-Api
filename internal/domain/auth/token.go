@@ -3,6 +3,7 @@ package auth
 const (
 	RoleNomad          = "nomad"
 	RoleTradingStation = "trading_station"
+	RoleAdmin          = "admin"
 )
 
 type TokenClaims struct {
