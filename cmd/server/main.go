@@ -65,8 +65,15 @@ func run(ctx context.Context) error {
 	adminRepo := admininfrastructure.NewAdminRepo(queries)
 
 	tokenIssuer := authinfrastructure.NewTokenIssuer(cfg.AuthTokenSecret, cfg.AuthTokenTTL)
+	passwordVerifier := authinfrastructure.NewPasswordVerifier()
 
-	authUC := appauth.NewUseCase(nomadRepo, tradingStationRepo, adminRepo, tokenIssuer)
+	authUC := appauth.NewUseCase(
+		nomadRepo,
+		tradingStationRepo,
+		adminRepo,
+		tokenIssuer,
+		passwordVerifier,
+	)
 	productUC := appproduct.NewUseCase(productRepo)
 	tradingStationUC := appstation.NewUseCase(tradingStationRepo)
 	orderUC := apporder.NewUseCase(orderRepo, nomadRepo, tradingStationRepo, productRepo)
