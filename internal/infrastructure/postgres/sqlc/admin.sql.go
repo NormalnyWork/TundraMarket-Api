@@ -11,7 +11,7 @@ import (
 
 const getAdminByLogin = `-- name: GetAdminByLogin :one
 
-SELECT id, login, password, created_at FROM admin WHERE login = $1
+SELECT id, login, password_hash, created_at FROM admin WHERE login = $1
 `
 
 // internal/infrastructure/postgres/queries/admin.sql
@@ -21,22 +21,22 @@ func (q *Queries) GetAdminByLogin(ctx context.Context, login string) (Admin, err
 	err := row.Scan(
 		&i.ID,
 		&i.Login,
-		&i.Password,
+		&i.PasswordHash,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const updateAdminPassword = `-- name: UpdateAdminPassword :exec
-UPDATE admin SET password = $2 WHERE login = $1
+const updateAdminPasswordHash = `-- name: UpdateAdminPasswordHash :exec
+UPDATE admin SET password_hash = $2 WHERE login = $1
 `
 
-type UpdateAdminPasswordParams struct {
-	Login    string
-	Password string
+type UpdateAdminPasswordHashParams struct {
+	Login        string
+	PasswordHash string
 }
 
-func (q *Queries) UpdateAdminPassword(ctx context.Context, arg UpdateAdminPasswordParams) error {
-	_, err := q.db.Exec(ctx, updateAdminPassword, arg.Login, arg.Password)
+func (q *Queries) UpdateAdminPasswordHash(ctx context.Context, arg UpdateAdminPasswordHashParams) error {
+	_, err := q.db.Exec(ctx, updateAdminPasswordHash, arg.Login, arg.PasswordHash)
 	return err
 }

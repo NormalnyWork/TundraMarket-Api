@@ -22,10 +22,11 @@ type Input struct {
 }
 
 type UseCase struct {
-	nomads   nomad.Repository
-	stations tradingstation.TradingStationRepository
-	admins   domainadmin.AdminRepository
-	tokens   domainauth.TokenIssuer
+	nomads    nomad.Repository
+	stations  tradingstation.TradingStationRepository
+	admins    domainadmin.AdminRepository
+	tokens    domainauth.TokenIssuer
+	passwords domainauth.PasswordVerifier
 }
 
 func NewUseCase(
@@ -33,12 +34,14 @@ func NewUseCase(
 	stations tradingstation.TradingStationRepository,
 	admins domainadmin.AdminRepository,
 	tokens domainauth.TokenIssuer,
+	passwords domainauth.PasswordVerifier,
 ) *UseCase {
 	return &UseCase{
-		nomads:   nomads,
-		stations: stations,
-		admins:   admins,
-		tokens:   tokens,
+		nomads:    nomads,
+		stations:  stations,
+		admins:    admins,
+		tokens:    tokens,
+		passwords: passwords,
 	}
 }
 
@@ -108,7 +111,7 @@ func (uc *UseCase) AuthAdmin(ctx context.Context, login, password string) (strin
 	if err != nil {
 		return "", ErrUnauthorized
 	}
-	if admin.Password() != password {
+	if err := uc.passwords.Verify(admin.PasswordHash(), password); err != nil {
 		return "", ErrUnauthorized
 	}
 	return uc.tokens.Issue(domainauth.TokenClaims{

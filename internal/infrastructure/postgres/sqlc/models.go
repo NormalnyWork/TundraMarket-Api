@@ -58,10 +58,10 @@ func (ns NullStatus) Value() (driver.Value, error) {
 }
 
 type Admin struct {
-	ID        int32
-	Login     string
-	Password  string
-	CreatedAt pgtype.Timestamp
+	ID           int32
+	Login        string
+	PasswordHash string
+	CreatedAt    pgtype.Timestamp
 }
 
 type Nomad struct {

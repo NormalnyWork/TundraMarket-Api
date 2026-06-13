@@ -30,6 +30,6 @@ func (r *AdminRepo) GetByLogin(ctx context.Context, login string) (*domainadmin.
 	return domainadmin.New(
 		row.ID,
 		row.Login,
-		row.Password,
+		row.PasswordHash,
 	), nil
 }
